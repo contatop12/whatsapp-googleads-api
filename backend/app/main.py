@@ -29,6 +29,11 @@ app.include_router(whatsapp.router)
 app.include_router(debug.router)
 
 
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "configured": settings.is_configured()}
