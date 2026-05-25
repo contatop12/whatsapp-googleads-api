@@ -23,7 +23,7 @@ def init_sentry() -> bool:
             FastApiIntegration(transaction_style="endpoint"),
         ],
         traces_sample_rate=traces_rate,
-        # Conforme guia Sentry FastAPI — headers e IP nas transações
+        enable_logs=True,
         send_default_pii=True,
         attach_stacktrace=True,
     )
@@ -31,9 +31,10 @@ def init_sentry() -> bool:
 
 
 def capture_test_event() -> str | None:
-    """Envia evento de teste; retorna event_id ou None se Sentry desligado."""
+    """Envia evento + log de teste; retorna event_id ou None se Sentry desligado."""
     if not settings.sentry_enabled:
         return None
+    sentry_sdk.logger.info("Sentry Logs test — whatsapp-googleads-api backend")
     return sentry_sdk.capture_message(
         "Sentry test event — whatsapp-googleads-api backend",
         level="info",
