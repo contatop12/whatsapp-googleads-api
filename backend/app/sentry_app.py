@@ -12,6 +12,8 @@ def init_sentry() -> bool:
     if not settings.sentry_enabled:
         return False
 
+    traces_rate = float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.2"))
+
     sentry_sdk.init(
         dsn=settings.sentry_dsn,
         environment=settings.environment,
@@ -20,8 +22,9 @@ def init_sentry() -> bool:
             StarletteIntegration(transaction_style="endpoint"),
             FastApiIntegration(transaction_style="endpoint"),
         ],
-        traces_sample_rate=0.2,
-        send_default_pii=False,
+        traces_sample_rate=traces_rate,
+        # Conforme guia Sentry FastAPI — headers e IP nas transações
+        send_default_pii=True,
         attach_stacktrace=True,
     )
     return True

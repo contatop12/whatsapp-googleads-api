@@ -1,7 +1,7 @@
 import warnings
 
 import logfire
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from app.config import settings
 from app.middleware.cors_dynamic import DynamicCORSMiddleware
@@ -32,3 +32,19 @@ app.include_router(debug.router)
 @app.get("/health")
 async def health():
     return {"status": "ok", "configured": settings.is_configured()}
+
+
+@app.get("/sentry-debug")
+async def sentry_debug():
+    """
+    Rota de verificação do Sentry (guia oficial).
+    Disponível apenas fora de production.
+    """
+    if settings.environment == "production":
+        raise HTTPException(status_code=404, detail="Not found")
+    if not settings.sentry_enabled:
+        raise HTTPException(
+            status_code=503,
+            detail="SENTRY_DSN não configurado. Defina no .env e reinicie o servidor.",
+        )
+    _ = 1 / 0  # noqa: F841 — erro intencional para validar o painel Sentry
