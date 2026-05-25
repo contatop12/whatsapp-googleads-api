@@ -79,55 +79,95 @@ export default function GoogleAdsSettingsPage() {
 
   return (
     <div className="p-6 max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Google Ads</h1>
-        <p className="text-sm text-slate-500">Credenciais e nomes de conversão por etapa</p>
+      <div className="border-b border-zinc-800 pb-4">
+        <h1 className="text-lg font-bold text-zinc-100">Google Ads</h1>
+        <p className="text-xs text-zinc-500 mt-1">Credenciais e ações de conversão por etapa</p>
       </div>
 
-      <div className="space-y-4 bg-white rounded-lg border p-4">
+      {/* Account */}
+      <Section title="Conta">
         <Field
-          label="Customer ID (ex: 1234567890)"
+          label="Customer ID"
           id="customer_id"
           value={form.google_ads_customer_id}
           onChange={set('google_ads_customer_id')}
+          placeholder="1234567890"
+          hint="Sem traços. Encontre em Ferramentas → Configurações."
         />
+      </Section>
+
+      {/* Stage 1 */}
+      <Section title="Etapa 1 — Novo Lead" dot="bg-amber-400">
         <Field
-          label="Conversão Etapa 1 — Novo Lead (ID da ação)"
+          label="ID da ação de conversão"
           id="conv1"
           value={form.google_ads_conversion_new_lead}
           onChange={set('google_ads_conversion_new_lead')}
+          placeholder="AW-XXXXXXXXXX/XXXXX"
         />
+      </Section>
+
+      {/* Stage 2 */}
+      <Section title="Etapa 2 — Qualificado" dot="bg-blue-400">
         <Field
-          label="Conversão Etapa 2 — Qualificado (ID da ação)"
+          label="ID da ação de conversão"
           id="conv2"
           value={form.google_ads_conversion_qualified}
           onChange={set('google_ads_conversion_qualified')}
+          placeholder="AW-XXXXXXXXXX/XXXXX"
         />
         <Field
-          label="Valor fixo Etapa 2 (R$)"
+          label="Valor fixo (R$)"
           id="val2"
           value={form.conversion_value_qualified}
           onChange={set('conversion_value_qualified')}
           type="number"
+          placeholder="0.00"
         />
+      </Section>
+
+      {/* Stage 3 */}
+      <Section title="Etapa 3 — Convertido" dot="bg-emerald-400">
         <Field
-          label="Conversão Etapa 3 — Convertido (ID da ação)"
+          label="ID da ação de conversão"
           id="conv3"
           value={form.google_ads_conversion_converted}
           onChange={set('google_ads_conversion_converted')}
+          placeholder="AW-XXXXXXXXXX/XXXXX"
         />
         <Field
-          label="Valor fixo Etapa 3 — automático por palavra-chave (R$)"
+          label="Valor padrão (R$) — sobrescrito pelo valor real"
           id="val3"
           value={form.conversion_value_converted}
           onChange={set('conversion_value_converted')}
           type="number"
+          placeholder="0.00"
         />
-      </div>
+      </Section>
 
       <Button onClick={handleSave} disabled={saving || !tenant}>
-        {saving ? 'Salvando...' : 'Salvar'}
+        {saving ? 'Salvando...' : 'Salvar configurações'}
       </Button>
+    </div>
+  )
+}
+
+function Section({
+  title,
+  children,
+  dot,
+}: {
+  title: string
+  children: React.ReactNode
+  dot?: string
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-zinc-950/50">
+        {dot && <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />}
+        <p className="text-xs font-medium text-zinc-400 uppercase tracking-widest">{title}</p>
+      </div>
+      <div className="p-4 space-y-4">{children}</div>
     </div>
   )
 }
@@ -138,17 +178,22 @@ function Field({
   value,
   onChange,
   type = 'text',
+  placeholder,
+  hint,
 }: {
   label: string
   id: string
   value: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   type?: string
+  placeholder?: string
+  hint?: string
 }) {
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>
-      <Input id={id} type={type} value={value} onChange={onChange} />
+      <Input id={id} type={type} value={value} onChange={onChange} placeholder={placeholder} className="font-mono" />
+      {hint && <p className="text-[11px] text-zinc-600">{hint}</p>}
     </div>
   )
 }

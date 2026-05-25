@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react'
 import { api, type Tenant } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/components/ui/use-toast'
 import { createClient } from '@/lib/supabase/client'
-import { X, Plus } from 'lucide-react'
+import { X, Plus, Globe } from 'lucide-react'
 
 function normalizeOriginInput(value: string): string | null {
   const origin = value.trim().replace(/\/+$/, '')
@@ -49,7 +48,7 @@ export default function AllowedSitesPage() {
     if (!normalized) {
       toast({
         title: 'URL inválida',
-        description: 'Use o formato completo, ex: https://www.seusite.com.br',
+        description: 'Use o formato completo: https://www.seusite.com.br',
         variant: 'destructive',
       })
       return
@@ -78,55 +77,67 @@ export default function AllowedSitesPage() {
 
   return (
     <div className="p-6 max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Sites permitidos</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          URLs dos sites onde o snippet de rastreamento está instalado. O navegador só
-          consegue enviar dados para <code className="text-xs">/api/track</code> se a
-          origem estiver autorizada aqui (CORS).
+      <div className="border-b border-zinc-800 pb-4">
+        <h1 className="text-lg font-bold text-zinc-100">Sites permitidos</h1>
+        <p className="text-xs text-zinc-500 mt-1">
+          URLs onde o snippet de rastreamento está instalado. Necessário para CORS em{' '}
+          <code className="font-mono text-zinc-400 bg-zinc-800 px-1 rounded">/api/track</code>.
         </p>
       </div>
 
-      <div className="space-y-3 bg-white rounded-lg border p-4">
-        <div className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="https://www.seusite.com.br"
-            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          />
-          <Button size="icon" variant="outline" onClick={handleAdd} type="button">
-            <Plus size={16} />
-          </Button>
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+        <div className="p-4 border-b border-zinc-800 bg-zinc-950/50">
+          <div className="flex gap-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="https://www.seusite.com.br"
+              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+              className="font-mono"
+            />
+            <Button size="icon" variant="outline" onClick={handleAdd} type="button">
+              <Plus size={15} />
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2 min-h-[2rem]">
+
+        <div className="p-4 min-h-[80px]">
           {origins.length === 0 ? (
-            <p className="text-sm text-slate-400">Nenhum site cadastrado ainda.</p>
+            <div className="flex items-center gap-2 text-zinc-700 text-xs py-4 justify-center">
+              <Globe size={14} />
+              Nenhum site cadastrado ainda.
+            </div>
           ) : (
-            origins.map((origin) => (
-              <Badge key={origin} variant="secondary" className="gap-1">
-                {origin}
-                <button
-                  type="button"
-                  onClick={() => setOrigins((p) => p.filter((o) => o !== origin))}
-                  aria-label={`Remover ${origin}`}
+            <div className="flex flex-wrap gap-2">
+              {origins.map((origin) => (
+                <span
+                  key={origin}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded border border-zinc-700 bg-zinc-800 text-xs font-mono text-zinc-300"
                 >
-                  <X size={12} />
-                </button>
-              </Badge>
-            ))
+                  {origin}
+                  <button
+                    type="button"
+                    onClick={() => setOrigins((p) => p.filter((o) => o !== origin))}
+                    className="text-zinc-600 hover:text-zinc-300 transition-colors ml-0.5"
+                    aria-label={`Remover ${origin}`}
+                  >
+                    <X size={11} />
+                  </button>
+                </span>
+              ))}
+            </div>
           )}
         </div>
       </div>
 
-      <p className="text-xs text-slate-500">
-        O dashboard (ex: localhost:3000) continua configurado em{' '}
-        <code className="text-xs">ALLOWED_ORIGINS</code> no servidor — não precisa
-        repetir aqui.
+      <p className="text-xs text-zinc-700">
+        O dashboard está configurado em{' '}
+        <code className="font-mono text-zinc-600 bg-zinc-800 px-1 rounded">ALLOWED_ORIGINS</code>{' '}
+        no servidor — não precisa repetir aqui.
       </p>
 
       <Button onClick={handleSave} disabled={saving || !tenant}>
-        {saving ? 'Salvando...' : 'Salvar'}
+        {saving ? 'Salvando...' : 'Salvar sites'}
       </Button>
     </div>
   )

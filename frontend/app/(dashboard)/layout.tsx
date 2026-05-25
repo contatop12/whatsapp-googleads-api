@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { LayoutGrid, BarChart3, Settings, LogOut, MessageCircle, Globe } from 'lucide-react'
+import { LayoutGrid, BarChart3, Settings, LogOut, MessageCircle, Globe, Zap } from 'lucide-react'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -12,29 +12,56 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!user) redirect('/login')
 
   return (
-    <div className="flex h-screen bg-slate-100">
-      <aside className="w-56 bg-white border-r flex flex-col shrink-0">
-        <div className="p-4 border-b">
-          <h1 className="font-semibold text-sm text-slate-900">WA → Google Ads</h1>
+    <div className="flex h-screen bg-zinc-950 overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-56 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0">
+        {/* Logo */}
+        <div className="px-4 py-5 border-b border-zinc-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shadow-[0_0_12px_rgba(16,185,129,0.4)] shrink-0">
+              <Zap size={13} className="text-zinc-950" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-zinc-100 leading-none">WA → Ads</p>
+              <p className="text-[10px] text-zinc-500 mt-0.5">Pipeline</p>
+            </div>
+          </div>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
-          <NavItem href="/pipeline" icon={<LayoutGrid size={16} />} label="Pipeline" />
-          <NavItem href="/reports" icon={<BarChart3 size={16} />} label="Relatórios" />
-          <NavItem href="/settings/whatsapp" icon={<MessageCircle size={16} />} label="WhatsApp" />
-          <NavItem href="/settings/google-ads" icon={<Settings size={16} />} label="Google Ads" />
-          <NavItem href="/settings/keywords" icon={<Settings size={16} />} label="Palavras-chave" />
-          <NavItem href="/settings/sites" icon={<Globe size={16} />} label="Sites permitidos" />
+
+        {/* Nav */}
+        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+          <p className="px-2 pt-2 pb-1 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">
+            Principal
+          </p>
+          <NavItem href="/pipeline" icon={<LayoutGrid size={15} />} label="Pipeline" />
+          <NavItem href="/reports" icon={<BarChart3 size={15} />} label="Relatórios" />
+
+          <p className="px-2 pt-4 pb-1 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">
+            Configurações
+          </p>
+          <NavItem href="/settings/whatsapp" icon={<MessageCircle size={15} />} label="WhatsApp" />
+          <NavItem href="/settings/google-ads" icon={<Settings size={15} />} label="Google Ads" />
+          <NavItem href="/settings/keywords" icon={<Zap size={15} />} label="Palavras-chave" />
+          <NavItem href="/settings/sites" icon={<Globe size={15} />} label="Sites permitidos" />
         </nav>
-        <form action="/api/auth/signout" method="post" className="p-3 border-t">
-          <button
-            type="submit"
-            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 w-full"
-          >
-            <LogOut size={16} /> Sair
-          </button>
-        </form>
+
+        {/* Footer */}
+        <div className="p-3 border-t border-zinc-800">
+          <p className="px-2 mb-1 text-[10px] text-zinc-600 truncate">{user.email}</p>
+          <form action="/api/auth/signout" method="post">
+            <button
+              type="submit"
+              className="flex items-center gap-2 px-2 py-2 text-xs text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 rounded-md w-full transition-colors"
+            >
+              <LogOut size={13} />
+              Sair
+            </button>
+          </form>
+        </div>
       </aside>
-      <main className="flex-1 overflow-auto">{children}</main>
+
+      {/* Main */}
+      <main className="flex-1 overflow-auto bg-zinc-950">{children}</main>
     </div>
   )
 }
@@ -51,9 +78,11 @@ function NavItem({
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md"
+      className="flex items-center gap-2.5 px-2 py-2 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors group"
     >
-      {icon}
+      <span className="text-zinc-600 group-hover:text-emerald-500 transition-colors">
+        {icon}
+      </span>
       {label}
     </Link>
   )

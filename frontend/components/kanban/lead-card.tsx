@@ -1,19 +1,31 @@
 'use client'
 
 import { Draggable } from '@hello-pangea/dnd'
-import { Badge } from '@/components/ui/badge'
 import { formatPhone, timeAgo } from '@/lib/utils'
-import { MapPin, Clock } from 'lucide-react'
+import { MapPin, Clock, ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import type { Lead } from '@/lib/api'
 
 interface LeadCardProps {
   lead: Lead
   index: number
+  stage: 1 | 2 | 3
   isLocked?: boolean
 }
 
-export function LeadCard({ lead, index, isLocked }: LeadCardProps) {
+const STAGE_BORDER = {
+  1: 'border-l-amber-500/60',
+  2: 'border-l-blue-500/60',
+  3: 'border-l-emerald-500/60',
+} as const
+
+const STAGE_GLOW_DRAG = {
+  1: 'shadow-[0_4px_20px_rgba(245,158,11,0.15),0_2px_6px_rgba(0,0,0,0.4)]',
+  2: 'shadow-[0_4px_20px_rgba(59,130,246,0.15),0_2px_6px_rgba(0,0,0,0.4)]',
+  3: 'shadow-[0_4px_20px_rgba(16,185,129,0.15),0_2px_6px_rgba(0,0,0,0.4)]',
+} as const
+
+export function LeadCard({ lead, index, stage, isLocked }: LeadCardProps) {
   return (
     <Draggable draggableId={lead.id} index={index} isDragDisabled={isLocked}>
       {(provided, snapshot) => (
@@ -21,40 +33,64 @@ export function LeadCard({ lead, index, isLocked }: LeadCardProps) {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={`bg-white rounded-lg border p-3 space-y-2 cursor-grab active:cursor-grabbing
-            ${snapshot.isDragging ? 'shadow-lg ring-2 ring-blue-400' : 'shadow-sm'}
-            ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+          className={`
+            bg-zinc-900 rounded-lg border-l-2 border-r border-t border-b
+            border-r-zinc-800 border-t-zinc-800 border-b-zinc-800
+            ${STAGE_BORDER[stage]}
+            p-3 space-y-2.5
+            cursor-grab active:cursor-grabbing
+            transition-all duration-150
+            ${snapshot.isDragging
+              ? `${STAGE_GLOW_DRAG[stage]} scale-[1.02] z-50`
+              : 'shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.4)] hover:bg-zinc-850'
+            }
+            ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}
+          `}
         >
-          <div className="flex items-start justify-between">
-            <p className="font-medium text-sm text-slate-900 truncate">
+          {/* Name + gclid badge */}
+          <div className="flex items-start justify-between gap-2">
+            <p className="font-semibold text-sm text-zinc-100 truncate leading-tight">
               {lead.name || formatPhone(lead.phone)}
             </p>
             {lead.gclid && (
-              <Badge variant="outline" className="text-xs ml-1 shrink-0">
-                gclid
-              </Badge>
+              <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-mono">
+                ads
+              </span>
             )}
           </div>
 
-          {lead.name && <p className="text-xs text-slate-500">{formatPhone(lead.phone)}</p>}
+          {/* Phone (if name shown) */}
+          {lead.name && (
+            <p className="text-xs text-zinc-500 font-mono">{formatPhone(lead.phone)}</p>
+          )}
 
-          <div className="flex items-center gap-3 text-xs text-slate-400">
+          {/* Meta row */}
+          <div className="flex items-center gap-3 text-[11px] text-zinc-600">
             {lead.city && (
               <span className="flex items-center gap-1">
-                <MapPin size={10} /> {lead.city}
+                <MapPin size={9} className="text-zinc-700" />
+                {lead.city}
               </span>
             )}
             <span className="flex items-center gap-1">
-              <Clock size={10} /> {timeAgo(lead.created_at)}
+              <Clock size={9} className="text-zinc-700" />
+              {timeAgo(lead.created_at)}
             </span>
+            {lead.conversion_value != null && stage === 3 && (
+              <span className="ml-auto font-mono text-emerald-500 font-medium">
+                R${Number(lead.conversion_value).toFixed(0)}
+              </span>
+            )}
           </div>
 
+          {/* Detail link */}
           <Link
             href={`/leads/${lead.id}`}
-            className="text-xs text-blue-600 hover:underline"
+            className="flex items-center gap-0.5 text-[11px] text-zinc-600 hover:text-emerald-400 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
-            Ver detalhes →
+            Ver detalhes
+            <ArrowUpRight size={10} />
           </Link>
         </div>
       )}

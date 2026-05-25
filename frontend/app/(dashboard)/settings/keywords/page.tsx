@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { api, type Tenant } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/components/ui/use-toast'
 import { createClient } from '@/lib/supabase/client'
 import { X, Plus } from 'lucide-react'
@@ -57,16 +56,18 @@ export default function KeywordsPage() {
   }
 
   return (
-    <div className="p-6 max-w-2xl space-y-8">
-      <div>
-        <h1 className="text-xl font-semibold">Palavras-chave</h1>
-        <p className="text-sm text-slate-500">
-          Termos que avançam o lead automaticamente de etapa.
+    <div className="p-6 max-w-2xl space-y-6">
+      <div className="border-b border-zinc-800 pb-4">
+        <h1 className="text-lg font-bold text-zinc-100">Palavras-chave</h1>
+        <p className="text-xs text-zinc-500 mt-1">
+          Termos no WhatsApp que avançam o lead automaticamente de etapa.
         </p>
       </div>
 
       <KeywordSection
-        title="Etapa 1 → 2 (Qualificado)"
+        title="Etapa 1 → 2"
+        subtitle="Qualificado"
+        dot="bg-blue-400"
         keywords={qualified}
         input={inputQ}
         onInputChange={setInputQ}
@@ -77,10 +78,13 @@ export default function KeywordsPage() {
           }
         }}
         onRemove={(kw) => setQualified((p) => p.filter((k) => k !== kw))}
+        tagColor="bg-blue-500/10 border-blue-500/20 text-blue-300"
       />
 
       <KeywordSection
-        title="Etapa 2 → 3 (Convertido)"
+        title="Etapa 2 → 3"
+        subtitle="Convertido"
+        dot="bg-emerald-400"
         keywords={converted}
         input={inputC}
         onInputChange={setInputC}
@@ -91,10 +95,11 @@ export default function KeywordsPage() {
           }
         }}
         onRemove={(kw) => setConverted((p) => p.filter((k) => k !== kw))}
+        tagColor="bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
       />
 
       <Button onClick={handleSave} disabled={saving || !tenant}>
-        {saving ? 'Salvando...' : 'Salvar'}
+        {saving ? 'Salvando...' : 'Salvar palavras-chave'}
       </Button>
     </div>
   )
@@ -102,42 +107,69 @@ export default function KeywordsPage() {
 
 function KeywordSection({
   title,
+  subtitle,
+  dot,
   keywords,
   input,
   onInputChange,
   onAdd,
   onRemove,
+  tagColor,
 }: {
   title: string
+  subtitle: string
+  dot: string
   keywords: string[]
   input: string
   onInputChange: (v: string) => void
   onAdd: () => void
   onRemove: (kw: string) => void
+  tagColor: string
 }) {
   return (
-    <div className="space-y-3 bg-white rounded-lg border p-4">
-      <h2 className="text-sm font-medium text-slate-700">{title}</h2>
-      <div className="flex gap-2">
-        <Input
-          value={input}
-          onChange={(e) => onInputChange(e.target.value)}
-          placeholder="Adicionar palavra-chave"
-          onKeyDown={(e) => e.key === 'Enter' && onAdd()}
-        />
-        <Button size="icon" variant="outline" onClick={onAdd} type="button">
-          <Plus size={16} />
-        </Button>
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-zinc-950/50">
+        <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+        <p className="text-xs font-medium text-zinc-400 uppercase tracking-widest">
+          {title} <span className="text-zinc-600">—</span> {subtitle}
+        </p>
+        <span className="ml-auto text-xs text-zinc-700 font-mono">{keywords.length}</span>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {keywords.map((kw) => (
-          <Badge key={kw} variant="secondary" className="gap-1">
-            {kw}
-            <button type="button" onClick={() => onRemove(kw)} aria-label={`Remover ${kw}`}>
-              <X size={12} />
-            </button>
-          </Badge>
-        ))}
+      <div className="p-4 space-y-3">
+        <div className="flex gap-2">
+          <Input
+            value={input}
+            onChange={(e) => onInputChange(e.target.value)}
+            placeholder="Digite e pressione Enter"
+            onKeyDown={(e) => e.key === 'Enter' && onAdd()}
+            className="font-mono"
+          />
+          <Button size="icon" variant="outline" onClick={onAdd} type="button">
+            <Plus size={15} />
+          </Button>
+        </div>
+        {keywords.length === 0 ? (
+          <p className="text-xs text-zinc-700 py-1">Nenhuma palavra-chave cadastrada.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {keywords.map((kw) => (
+              <span
+                key={kw}
+                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded border text-xs font-mono ${tagColor}`}
+              >
+                {kw}
+                <button
+                  type="button"
+                  onClick={() => onRemove(kw)}
+                  className="hover:opacity-60 transition-opacity"
+                  aria-label={`Remover ${kw}`}
+                >
+                  <X size={11} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
