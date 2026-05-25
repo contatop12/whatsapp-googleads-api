@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 
 from app.config import settings
+from app.routers import track
 
 if settings.sentry_dsn:
     sentry_sdk.init(
@@ -30,6 +31,8 @@ app.add_middleware(
 
 if settings.logfire_token:
     logfire.instrument_fastapi(app)
+
+app.include_router(track.router)
 
 
 @app.get("/health")
