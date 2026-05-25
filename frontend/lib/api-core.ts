@@ -64,6 +64,11 @@ export function buildApi(apiFetch: ApiFetch) {
     tenants: {
       list: () => apiFetch<Tenant[]>('/api/tenants'),
       get: (id: string) => apiFetch<Tenant>(`/api/tenants/${id}`),
+      create: (data: { name: string; slug: string }) =>
+        apiFetch<Tenant>('/api/tenants', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }),
       update: (id: string, data: Partial<Tenant>) =>
         apiFetch<Tenant>(`/api/tenants/${id}`, {
           method: 'PATCH',

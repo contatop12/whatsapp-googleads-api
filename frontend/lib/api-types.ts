@@ -33,4 +33,16 @@ export type Tenant = {
   allowed_origins: string[]
   evolution_instance_status: 'disconnected' | 'connecting' | 'connected'
   evolution_qr_code: string | null
+  created_at?: string
+}
+
+export type UserRole = 'super_admin' | 'admin' | 'client'
+
+export type User = {
+  id: string
+  name: string | null
+  tenant_id: string | null
+  role: UserRole
+  created_at: string
+  email?: string
 }

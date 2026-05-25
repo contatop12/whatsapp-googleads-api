@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { LayoutGrid, BarChart3, Settings, LogOut, MessageCircle, Globe, Zap } from 'lucide-react'
+import { getUserProfile } from '@/lib/tenant'
+import { LayoutGrid, BarChart3, Settings, LogOut, MessageCircle, Globe, Zap, Shield } from 'lucide-react'
+import { GZapiLogo } from '@/components/gzapi-logo'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -11,26 +13,43 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   if (!user) redirect('/login')
 
+  const { profile } = await getUserProfile()
+  const isSuperAdmin = profile?.role === 'super_admin'
+
   return (
     <div className="flex h-screen bg-zinc-950 overflow-hidden">
       {/* Sidebar */}
       <aside className="w-56 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0">
         {/* Logo */}
-        <div className="px-4 py-5 border-b border-zinc-800">
+        <div className="px-4 py-4 border-b border-zinc-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shadow-[0_0_12px_rgba(16,185,129,0.4)] shrink-0">
-              <Zap size={13} className="text-zinc-950" />
-            </div>
+            <GZapiLogo size={28} />
             <div>
-              <p className="text-sm font-bold text-zinc-100 leading-none">WA → Ads</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">Pipeline</p>
+              <p className="text-sm font-bold text-zinc-100 leading-none tracking-tight">GZapi</p>
+              <p className="text-[10px] text-zinc-500 mt-0.5">
+                {isSuperAdmin ? (
+                  <span className="text-amber-500">Super Admin</span>
+                ) : (
+                  'Pipeline'
+                )}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-          <p className="px-2 pt-2 pb-1 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">
+          {/* Super Admin section */}
+          {isSuperAdmin && (
+            <>
+              <p className="px-2 pt-2 pb-1 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">
+                Super Admin
+              </p>
+              <NavItem href="/admin" icon={<Shield size={15} />} label="Painel Admin" accent />
+            </>
+          )}
+
+          <p className="px-2 pt-3 pb-1 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">
             Principal
           </p>
           <NavItem href="/pipeline" icon={<LayoutGrid size={15} />} label="Pipeline" />
@@ -70,17 +89,27 @@ function NavItem({
   href,
   icon,
   label,
+  accent,
 }: {
   href: string
   icon: React.ReactNode
   label: string
+  accent?: boolean
 }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 px-2 py-2 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors group"
+      className={`flex items-center gap-2.5 px-2 py-2 text-sm rounded-md transition-colors group ${
+        accent
+          ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
+          : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+      }`}
     >
-      <span className="text-zinc-600 group-hover:text-emerald-500 transition-colors">
+      <span
+        className={`transition-colors ${
+          accent ? 'text-amber-500 group-hover:text-amber-400' : 'text-zinc-600 group-hover:text-emerald-500'
+        }`}
+      >
         {icon}
       </span>
       {label}

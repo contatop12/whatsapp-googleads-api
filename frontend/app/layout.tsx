@@ -3,8 +3,8 @@ import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 
 export const metadata: Metadata = {
-  title: 'WA → Google Ads',
-  description: 'Dashboard de rastreamento de conversões WhatsApp → Google Ads',
+  title: 'GZapi',
+  description: 'Pipeline de rastreamento WhatsApp → Google Ads',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
