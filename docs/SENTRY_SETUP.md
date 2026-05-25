@@ -16,13 +16,16 @@ https://mcp.sentry.dev/mcp/p12digital
 
 > O valor `SENTRY_AUTH_TOKEN` no `.env` é um token de escopo `org:ci` (MCP/CI). Ele **não** cria projetos via API REST e **não** é o DSN.
 
-## 2. Criar o projeto no Sentry (UI)
+## 2. Projeto criado (MCP)
 
-Se preferir pela interface:
+| Campo | Valor |
+|-------|--------|
+| Org | `p12digital` |
+| Projeto | `whatsapp-googleads-api` |
+| Plataforma | `python-fastapi` |
+| Painel | [p12digital.sentry.io — projeto](https://p12digital.sentry.io/projects/whatsapp-googleads-api/) |
 
-1. Acesse [https://p12digital.sentry.io](https://p12digital.sentry.io) (ou [sentry.io](https://sentry.io) → org **p12digital**).
-2. **Create Project** → plataforma **FastAPI** (ou Python).
-3. Nome sugerido: `whatsapp-googleads-api` (backend) e depois `whatsapp-googleads-web` (frontend Next.js, quando existir).
+O `SENTRY_DSN` já está no `.env` na raiz do repositório.
 
 ## 3. Copiar o Client Key (DSN)
 
@@ -48,9 +51,13 @@ cd backend
 ```
 
 - `GET http://localhost:8000/health` → `"sentry": true` em `configured`
-- `POST http://localhost:8000/debug/sentry-test` (com JWT admin) → envia evento de teste
+- `GET http://localhost:8000/sentry-debug` → dispara erro intencional (guia Sentry; só em `development`/`staging`)
+- `POST http://localhost:8000/debug/sentry-test` (com JWT admin) → envia evento de teste sem quebrar a requisição
 
-No painel Sentry: **Issues** deve aparecer *"Sentry test event — whatsapp-googleads-api backend"*.
+No painel Sentry (após alguns segundos):
+
+- **Performance** → transação em `/sentry-debug`
+- **Issues** → `ZeroDivisionError` ou o evento *"Sentry test event — whatsapp-googleads-api backend"*
 
 ## 5. Deploy (Easypanel)
 
