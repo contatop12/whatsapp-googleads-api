@@ -1,10 +1,10 @@
-from supabase import AsyncClient, acreate_client
+from supabase import AClient, acreate_client
 from app.config import settings
 
-_client: AsyncClient | None = None
+_client: AClient | None = None
 
 
-async def get_db() -> AsyncClient:
+async def get_db() -> AClient:
     global _client
     if _client is None:
         _client = await acreate_client(

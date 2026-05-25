@@ -1,13 +1,31 @@
 from fastapi import APIRouter, HTTPException
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from app.database import get_db
 from app.services.classifier import classify_message
-from app.services.pipeline import advance_stage
+from app.services.pipeline import advance_stage, record_first_message
 from app.services.evolution import handle_connection_update
 import logfire
 
 router = APIRouter()
+
+
+def _parse_message(payload: dict) -> tuple[str, str, str | None]:
+    data = payload.get("data", {})
+    remote_jid = data.get("key", {}).get("remoteJid", "")
+    phone = remote_jid.split("@")[0]
+    message_text = (
+        data.get("message", {}).get("conversation")
+        or data.get("message", {}).get("extendedTextMessage", {}).get("text")
+        or ""
+    )
+    timestamp = data.get("messageTimestamp")
+    first_message_at = (
+        datetime.fromtimestamp(timestamp, tz=timezone.utc).isoformat()
+        if timestamp
+        else datetime.now(timezone.utc).isoformat()
+    )
+    return phone, message_text, first_message_at
 
 
 @router.post("/webhooks/evolution/{slug}")
@@ -39,7 +57,6 @@ async def evolution_webhook(slug: str, payload: dict):
         if event == "QRCODE_UPDATED":
             qr_base64 = payload.get("data", {}).get("qrcode", {}).get("base64")
             if qr_base64:
-                from datetime import timedelta
                 expires_at = (datetime.now(timezone.utc) + timedelta(seconds=60)).isoformat()
                 await db.table("tenants").update({
                     "evolution_qr_code": qr_base64,
@@ -48,17 +65,9 @@ async def evolution_webhook(slug: str, payload: dict):
             return {"ok": True}
 
         if event == "MESSAGES_UPSERT":
-            data = payload.get("data", {})
-            remote_jid = data.get("key", {}).get("remoteJid", "")
-            phone = remote_jid.split("@")[0]
-            message_text = (
-                data.get("message", {}).get("conversation")
-                or data.get("message", {}).get("extendedTextMessage", {}).get("text")
-                or ""
-            )
-            timestamp = data.get("messageTimestamp")
+            phone, message_text, first_message_at = _parse_message(payload)
+            remote_jid = payload.get("data", {}).get("key", {}).get("remoteJid", "")
 
-            # Skip group messages
             if "@g.us" in remote_jid:
                 return {"ok": True}
 
@@ -71,10 +80,6 @@ async def evolution_webhook(slug: str, payload: dict):
             )
 
             if not lead_resp.data:
-                first_message_at = (
-                    datetime.fromtimestamp(timestamp, tz=timezone.utc).isoformat()
-                    if timestamp else datetime.now(timezone.utc).isoformat()
-                )
                 insert_resp = await db.table("leads").insert({
                     "tenant_id": str(tenant["id"]),
                     "phone": phone,
@@ -83,35 +88,28 @@ async def evolution_webhook(slug: str, payload: dict):
                 }).execute()
                 lead = insert_resp.data[0]
                 logfire.info("new_lead_from_webhook", phone=phone, tenant=slug)
-
-                from app.services.google_ads import upload_conversion
-                upload_result = await upload_conversion(lead=lead, stage=1, tenant=tenant)
-                await db.table("conversions").insert({
-                    "tenant_id": str(tenant["id"]),
-                    "lead_id": str(lead["id"]),
-                    "stage": 1,
-                    "gclid": lead.get("gclid", ""),
-                    "conversion_name": tenant.get("google_ads_conversion_new_lead", ""),
-                    "google_ads_status": upload_result.get("status", "pending"),
-                    "google_ads_response": upload_result.get("response"),
-                    "triggered_by": "auto",
-                }).execute()
-
             else:
                 lead = lead_resp.data[0]
 
-                if message_text and lead["stage"] < 3:
-                    new_stage = classify_message(message_text, tenant, lead)
-                    if new_stage:
-                        try:
-                            await advance_stage(
-                                lead=lead,
-                                new_stage=new_stage,
-                                tenant=tenant,
-                                triggered_by="auto",
-                                conversion_value=None,
-                            )
-                        except Exception as e:
-                            logfire.warn("auto_advance_failed", lead_id=str(lead["id"]), error=str(e))
+            lead = await record_first_message(lead, tenant, first_message_at)
+
+            if message_text and lead["stage"] < 3:
+                new_stage = classify_message(message_text, tenant, lead)
+                if new_stage:
+                    conversion_value = (
+                        tenant.get("conversion_value_converted")
+                        if new_stage == 3
+                        else None
+                    )
+                    try:
+                        await advance_stage(
+                            lead=lead,
+                            new_stage=new_stage,
+                            tenant=tenant,
+                            triggered_by="auto",
+                            conversion_value=conversion_value,
+                        )
+                    except Exception as e:
+                        logfire.warn("auto_advance_failed", lead_id=str(lead["id"]), error=str(e))
 
         return {"ok": True}

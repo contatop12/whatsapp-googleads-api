@@ -12,6 +12,7 @@ def make_tenant(customer_id="1234567890"):
         "google_ads_conversion_qualified": "whatsapp_qualificado",
         "google_ads_conversion_converted": "whatsapp_convertido",
         "conversion_value_qualified": 50.0,
+        "conversion_value_converted": 500.0,
     }
 
 
@@ -58,6 +59,16 @@ async def test_upload_conversion_no_customer_id_returns_skipped():
     result = await upload_conversion(lead=make_lead(), stage=1, tenant=tenant)
     assert result["status"] == "skipped"
     assert result["reason"] == "no_customer_id"
+
+
+@pytest.mark.asyncio
+async def test_upload_conversion_stage3_uses_tenant_value_when_lead_has_none():
+    from app.services.google_ads import _conversion_value_for_stage
+
+    tenant = make_tenant()
+    lead = make_lead()
+    value = _conversion_value_for_stage(3, lead, tenant)
+    assert value == 500.0
 
 
 @pytest.mark.asyncio

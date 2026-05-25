@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from uuid import UUID
+
 from app.database import get_db
 from app.models.lead import LeadUpdate
+from app.middleware.tenant import AuthContext, get_auth_context, ensure_tenant_access, ensure_lead_access
 from app.services.pipeline import advance_stage, StageValidationError
 
 router = APIRouter(prefix="/api/leads", tags=["leads"])
@@ -15,7 +17,12 @@ class MoveRequest(BaseModel):
 
 
 @router.get("")
-async def list_leads(tenant_id: UUID, db=Depends(get_db)):
+async def list_leads(
+    tenant_id: UUID,
+    auth: AuthContext = Depends(get_auth_context),
+    db=Depends(get_db),
+):
+    ensure_tenant_access(auth, tenant_id)
     resp = await (
         db.table("leads")
         .select("*")
@@ -27,15 +34,21 @@ async def list_leads(tenant_id: UUID, db=Depends(get_db)):
 
 
 @router.get("/{lead_id}")
-async def get_lead(lead_id: UUID, db=Depends(get_db)):
-    resp = await db.table("leads").select("*").eq("id", str(lead_id)).maybe_single().execute()
-    if not resp.data:
-        raise HTTPException(status_code=404, detail="Lead not found")
-    return resp.data
+async def get_lead(
+    lead_id: UUID,
+    auth: AuthContext = Depends(get_auth_context),
+):
+    return await ensure_lead_access(auth, lead_id)
 
 
 @router.patch("/{lead_id}")
-async def update_lead(lead_id: UUID, body: LeadUpdate, db=Depends(get_db)):
+async def update_lead(
+    lead_id: UUID,
+    body: LeadUpdate,
+    auth: AuthContext = Depends(get_auth_context),
+    db=Depends(get_db),
+):
+    await ensure_lead_access(auth, lead_id)
     update_data = body.model_dump(exclude_none=True)
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -44,22 +57,25 @@ async def update_lead(lead_id: UUID, body: LeadUpdate, db=Depends(get_db)):
 
 
 @router.post("/{lead_id}/move")
-async def move_lead(lead_id: UUID, body: MoveRequest, db=Depends(get_db)):
-    lead_resp = await db.table("leads").select("*").eq("id", str(lead_id)).maybe_single().execute()
-    if not lead_resp.data:
-        raise HTTPException(status_code=404, detail="Lead not found")
+async def move_lead(
+    lead_id: UUID,
+    body: MoveRequest,
+    auth: AuthContext = Depends(get_auth_context),
+    db=Depends(get_db),
+):
+    lead = await ensure_lead_access(auth, lead_id)
 
     tenant_resp = await (
         db.table("tenants")
         .select("*")
-        .eq("id", str(lead_resp.data["tenant_id"]))
+        .eq("id", str(lead["tenant_id"]))
         .maybe_single()
         .execute()
     )
 
     try:
         updated = await advance_stage(
-            lead=lead_resp.data,
+            lead=lead,
             new_stage=body.new_stage,
             tenant=tenant_resp.data,
             triggered_by=body.triggered_by,

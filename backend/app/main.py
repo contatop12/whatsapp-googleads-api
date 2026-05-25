@@ -1,36 +1,25 @@
-import sentry_sdk
+import warnings
+
 import logfire
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from sentry_sdk.integrations.fastapi import FastApiIntegration
 
 from app.config import settings
+from app.middleware.cors_dynamic import DynamicCORSMiddleware
 from app.routers import track, webhooks, leads, tenants, whatsapp, debug
+from app.sentry_app import init_sentry
 
-if settings.sentry_dsn:
-    sentry_sdk.init(
-        dsn=settings.sentry_dsn,
-        integrations=[FastApiIntegration()],
-        traces_sample_rate=0.2,
-        environment=settings.environment,
-        send_default_pii=False,
-    )
-
-if settings.logfire_token:
-    logfire.configure(token=settings.logfire_token, service_name="rastreamento-backend")
+init_sentry()
 
 app = FastAPI(title="WhatsApp → Google Ads Tracking")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.allowed_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.add_middleware(DynamicCORSMiddleware)
 
-if settings.logfire_token:
-    logfire.instrument_fastapi(app)
+if settings.logfire_enabled:
+    try:
+        logfire.configure(token=settings.logfire_token, service_name="rastreamento-backend")
+        logfire.instrument_fastapi(app)
+    except Exception as exc:
+        warnings.warn(f"Logfire não inicializado: {exc}", stacklevel=1)
 
 app.include_router(track.router)
 app.include_router(webhooks.router)
@@ -42,4 +31,4 @@ app.include_router(debug.router)
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "configured": settings.is_configured()}

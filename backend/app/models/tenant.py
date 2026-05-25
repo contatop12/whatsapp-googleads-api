@@ -1,6 +1,8 @@
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+from app.utils.origins import normalize_origins
 
 
 class TenantBase(BaseModel):
@@ -16,6 +18,12 @@ class TenantBase(BaseModel):
     evolution_api_key: str | None = None
     keywords_qualified: list[str] = []
     keywords_converted: list[str] = []
+    allowed_origins: list[str] = []
+
+    @field_validator("allowed_origins")
+    @classmethod
+    def validate_allowed_origins(cls, values: list[str]) -> list[str]:
+        return normalize_origins(values)
 
 
 class TenantCreate(TenantBase):
@@ -32,6 +40,14 @@ class TenantUpdate(BaseModel):
     conversion_value_converted: float | None = None
     keywords_qualified: list[str] | None = None
     keywords_converted: list[str] | None = None
+    allowed_origins: list[str] | None = None
+
+    @field_validator("allowed_origins")
+    @classmethod
+    def validate_allowed_origins(cls, values: list[str] | None) -> list[str] | None:
+        if values is None:
+            return None
+        return normalize_origins(values)
 
 
 class Tenant(TenantBase):

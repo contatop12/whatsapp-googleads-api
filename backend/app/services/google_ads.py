@@ -28,6 +28,16 @@ def _conversion_name_for_stage(stage: int, tenant: dict) -> str | None:
     }.get(stage)
 
 
+def _conversion_value_for_stage(stage: int, lead: dict, tenant: dict) -> float | None:
+    if stage == 1:
+        return None
+    if stage == 2:
+        return tenant.get("conversion_value_qualified")
+    if stage == 3:
+        return lead.get("conversion_value") or tenant.get("conversion_value_converted")
+    return None
+
+
 def _conversion_time_for_stage(stage: int, lead: dict) -> datetime:
     ts = {
         1: lead.get("first_message_at") or lead.get("created_at"),
@@ -51,11 +61,7 @@ async def upload_conversion(lead: dict, stage: int, tenant: dict) -> dict:
     if not conversion_name:
         return {"status": "skipped", "reason": "no_conversion_name"}
 
-    conversion_value = (
-        lead.get("conversion_value") if stage == 3
-        else tenant.get("conversion_value_qualified") if stage == 2
-        else None
-    )
+    conversion_value = _conversion_value_for_stage(stage, lead, tenant)
 
     conv_time = _conversion_time_for_stage(stage, lead)
     conv_time_str = conv_time.strftime("%Y-%m-%d %H:%M:%S+00:00")
