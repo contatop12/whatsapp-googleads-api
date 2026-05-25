@@ -1,6 +1,6 @@
 # Rotas da API — whatsapp-googleads-api
 
-**Base URL produção:** `https://python-auto-whatsapp-googleads-api.SEU_DOMINIO.easypanel.host`
+**Base URL produção:** `https://gpaizap.axmxa0.easypanel.host`
 **Base URL local:** `http://localhost:8000`
 
 ---
