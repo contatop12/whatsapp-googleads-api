@@ -17,13 +17,17 @@ export function WhatsAppQR({ tenantId, initialStatus }: Props) {
   const [status, setStatus] = useState(initialStatus)
   const [qrBase64, setQrBase64] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchQR = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const data = await api.whatsapp.qr(tenantId)
       setQrBase64(data.base64)
       setStatus(data.status as typeof status)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao buscar QR code')
     } finally {
       setLoading(false)
     }
@@ -67,6 +71,28 @@ export function WhatsAppQR({ tenantId, initialStatus }: Props) {
   useEffect(() => {
     if (status !== 'connected') fetchQR()
   }, [status, fetchQR])
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+              <XCircle size={20} className="text-red-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-red-300 text-sm">Erro ao carregar WhatsApp</p>
+              <p className="text-xs text-red-500 mt-0.5">{error}</p>
+            </div>
+          </div>
+        </div>
+        <Button onClick={fetchQR} variant="outline" disabled={loading}>
+          <RefreshCw size={13} className={`mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+          Tentar novamente
+        </Button>
+      </div>
+    )
+  }
 
   if (status === 'connected') {
     return (
