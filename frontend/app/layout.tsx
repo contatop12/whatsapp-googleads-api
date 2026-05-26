@@ -6,8 +6,9 @@ export const metadata: Metadata = {
   title: 'GZapi',
   description: 'Pipeline de rastreamento WhatsApp → Google Ads',
   icons: {
-    icon: [{ url: '/favicon.png', type: 'image/png' }],
-    apple: [{ url: '/favicon.png', type: 'image/png' }],
+    icon: '/favicon.png',
+    apple: '/favicon.png',
+    shortcut: '/favicon.png',
   },
 }
 

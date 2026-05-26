@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 type HeroHeaderProps = {
@@ -44,14 +43,8 @@ export function HeroHeader({ tenantName }: HeroHeaderProps) {
 
       <div className="relative flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Image
-            src="/logo-gzapi.svg"
-            alt="GZAPI"
-            width={140}
-            height={34}
-            className="opacity-90"
-            priority
-          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-gzapi.png" alt="GZAPI" className="h-8 w-auto opacity-90" />
           <div className="w-px h-10 bg-zinc-700" />
           <div>
             <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">Bem-vindo</p>

@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -27,14 +26,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
             className="block rounded-md outline-none ring-emerald-500/50 focus-visible:ring-2 hover:opacity-90 transition-opacity"
             aria-label="Ir para Home"
           >
-            <Image
-              src="/logo-gzapi.svg"
-              alt="GZAPI"
-              width={120}
-              height={29}
-              className="h-7 w-auto"
-              priority
-            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-gzapi.png" alt="GZAPI" className="h-7 w-auto" />
             <p className="text-[10px] text-zinc-500 mt-2">
               {isSuperAdmin ? (
                 <span className="text-amber-500">Super Admin</span>
