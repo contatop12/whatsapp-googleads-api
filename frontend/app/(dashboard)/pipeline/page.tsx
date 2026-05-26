@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { KanbanBoard } from '@/components/kanban/kanban-board'
 import { getServerApi } from '@/lib/api-server'
 import { getUserProfile, resolveTenantId } from '@/lib/tenant'
@@ -25,9 +26,18 @@ export default async function PipelinePage({
   if (!tenantId) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-3">
           <p className="text-zinc-400 text-sm">Nenhum tenant configurado.</p>
-          <p className="text-zinc-600 text-xs">Contate o administrador.</p>
+          {isSuperAdmin ? (
+            <Link
+              href="/admin/tenants/new"
+              className="inline-block text-xs px-3 py-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+            >
+              Criar primeiro tenant →
+            </Link>
+          ) : (
+            <p className="text-zinc-600 text-xs">Contate o administrador.</p>
+          )}
         </div>
       </div>
     )
