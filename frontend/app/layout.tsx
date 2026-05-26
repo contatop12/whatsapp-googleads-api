@@ -5,6 +5,10 @@ import { Toaster } from '@/components/ui/toaster'
 export const metadata: Metadata = {
   title: 'GZapi',
   description: 'Pipeline de rastreamento WhatsApp → Google Ads',
+  icons: {
+    icon: [{ url: '/favicon.png', type: 'image/png' }],
+    apple: [{ url: '/favicon.png', type: 'image/png' }],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
