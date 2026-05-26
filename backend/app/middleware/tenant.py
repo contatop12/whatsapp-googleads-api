@@ -5,8 +5,14 @@ from fastapi import Depends, HTTPException, Header
 import jwt
 from jwt.exceptions import PyJWTError
 
-from app.config import settings
 from app.database import get_db
+
+_supabase_pubkey = None
+
+
+def set_supabase_pubkey(key) -> None:
+    global _supabase_pubkey
+    _supabase_pubkey = key
 
 
 @dataclass
@@ -18,15 +24,12 @@ class AuthContext:
 
 
 def _decode_supabase_jwt(token: str) -> dict:
-    if not settings.supabase_jwt_secret:
-        raise HTTPException(
-            status_code=503,
-            detail="SUPABASE_JWT_SECRET not configured",
-        )
+    if _supabase_pubkey is None:
+        raise HTTPException(status_code=503, detail="Auth public key not loaded")
     return jwt.decode(
         token,
-        settings.supabase_jwt_secret,
-        algorithms=["HS256"],
+        _supabase_pubkey,
+        algorithms=["ES256"],
         audience="authenticated",
     )
 

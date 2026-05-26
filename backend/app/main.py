@@ -1,18 +1,48 @@
+import base64
 import warnings
+from contextlib import asynccontextmanager
 
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="pydantic")
 
+import httpx
 import logfire
+from cryptography.hazmat.primitives.asymmetric.ec import (
+    EllipticCurvePublicNumbers,
+    SECP256R1,
+)
 from fastapi import FastAPI, HTTPException
 
 from app.config import settings
 from app.middleware.cors_dynamic import DynamicCORSMiddleware
+from app.middleware.tenant import set_supabase_pubkey
 from app.routers import track, webhooks, leads, tenants, whatsapp, debug
 from app.sentry_app import init_sentry
 
 init_sentry()
 
-app = FastAPI(title="WhatsApp → Google Ads Tracking")
+
+async def _load_supabase_jwks() -> None:
+    url = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        resp = await client.get(url)
+        resp.raise_for_status()
+        key = resp.json()["keys"][0]
+    x = int.from_bytes(base64.urlsafe_b64decode(key["x"] + "=="), "big")
+    y = int.from_bytes(base64.urlsafe_b64decode(key["y"] + "=="), "big")
+    pubkey = EllipticCurvePublicNumbers(x=x, y=y, curve=SECP256R1()).public_key()
+    set_supabase_pubkey(pubkey)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        await _load_supabase_jwks()
+    except Exception as exc:
+        warnings.warn(f"JWKS não carregado: {exc}", stacklevel=1)
+    yield
+
+
+app = FastAPI(title="WhatsApp → Google Ads Tracking", lifespan=lifespan)
 
 app.add_middleware(DynamicCORSMiddleware)
 
