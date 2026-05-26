@@ -126,22 +126,25 @@ export default function GoogleAdsSettingsPage() {
           title: 'Ação de conversão — Novo Lead',
           steps: [
             'No Google Ads, clique em "Ferramentas e configurações" → "Medição" → "Conversões".',
-            'Clique em "+ Nova ação de conversão" e escolha "Site".',
-            'Selecione a categoria "Envio de lead" ou "Contato".',
-            'Dê um nome como "Novo Lead - WhatsApp" e configure o valor como 0 (ou deixe sem valor).',
-            'Salve e copie o ID da conversão no formato AW-XXXXXXXXXX/XXXXX.',
-            'Cole o ID completo no campo acima.',
+            'Clique em "+ Nova ação de conversão" e escolha "Importar".',
+            'Selecione "Cliques do Google (gclid)" e clique em continuar.',
+            'Escolha a categoria "Contato".',
+            'Dê um nome como "whatsapp_novo_lead" e configure o valor como 0.',
+            'Em "Otimização de ações", selecione "Secundária".',
+            'Salve e copie o ID numérico da URL: ads.google.com/aw/conversions/detail?ctId=XXXXXXXXXX',
+            'Cole apenas o número (ex: 7624173249) no campo acima.',
           ],
-          example: 'AW-123456789/AbCdEfGhIjK',
-          note: 'Essa conversão é disparada quando um novo lead entra no funil — primeira mensagem ou formulário.',
+          example: '7624173249',
+          note: 'Etapa 1 deve ser Secundária — é apenas sinal de chegada do lead, não deve influenciar o Smart Bidding.',
         }}
       >
         <Field
-          label="ID da ação de conversão"
+          label="ID da ação de conversão (ctId numérico)"
           id="conv1"
           value={form.google_ads_conversion_new_lead}
           onChange={set('google_ads_conversion_new_lead')}
-          placeholder="AW-XXXXXXXXXX/XXXXX"
+          placeholder="7624173249"
+          hint="Número da URL do Google Ads: ?ctId=XXXXXXXXXX"
         />
       </Section>
 
@@ -152,22 +155,25 @@ export default function GoogleAdsSettingsPage() {
         help={{
           title: 'Ação de conversão — Lead Qualificado',
           steps: [
-            'Crie uma nova ação de conversão no Google Ads (mesmo processo da Etapa 1).',
-            'Escolha a categoria "Qualificação de lead" ou "Interesse".',
-            'Dê um nome como "Lead Qualificado - CRM".',
+            'Crie uma nova ação de conversão no Google Ads.',
+            'Escolha "Importar" → "Cliques do Google (gclid)".',
+            'Selecione a categoria "Lead qualificado".',
+            'Dê um nome como "whatsapp_qualificado".',
             'Para o valor, selecione "Usar o mesmo valor para cada conversão" e defina o valor fixo abaixo.',
-            'Copie o ID no formato AW-XXXXXXXXXX/XXXXX e cole no campo acima.',
+            'Em "Otimização de ações", selecione "Primária".',
+            'Copie o ID numérico da URL (?ctId=XXXXXXXXXX) e cole no campo acima.',
           ],
-          example: 'AW-123456789/XyZ123AbCdE',
-          note: 'O "Valor fixo" é enviado ao Google Ads toda vez que um lead é movido para esta etapa. Use o valor médio de um lead qualificado para o seu negócio.',
+          example: '7624173250',
+          note: 'O "Valor fixo" é enviado ao Google Ads toda vez que um lead é movido para esta etapa.',
         }}
       >
         <Field
-          label="ID da ação de conversão"
+          label="ID da ação de conversão (ctId numérico)"
           id="conv2"
           value={form.google_ads_conversion_qualified}
           onChange={set('google_ads_conversion_qualified')}
-          placeholder="AW-XXXXXXXXXX/XXXXX"
+          placeholder="7624173250"
+          hint="Número da URL do Google Ads: ?ctId=XXXXXXXXXX"
         />
         <Field
           label="Valor fixo (R$)"
@@ -187,22 +193,25 @@ export default function GoogleAdsSettingsPage() {
           title: 'Ação de conversão — Venda Convertida',
           steps: [
             'Crie uma nova ação de conversão no Google Ads.',
-            'Escolha a categoria "Compra" ou "Venda".',
-            'Dê um nome como "Venda Fechada - CRM".',
-            'Para o valor, selecione "Usar valores diferentes para cada conversão" — o sistema enviará o valor real da venda automaticamente.',
-            'Defina um "Valor padrão" como fallback para casos em que o valor real não esteja disponível.',
-            'Copie o ID no formato AW-XXXXXXXXXX/XXXXX e cole no campo acima.',
+            'Escolha "Importar" → "Cliques do Google (gclid)".',
+            'Selecione a categoria "Compra" ou "Venda".',
+            'Dê um nome como "whatsapp_convertido".',
+            'Para o valor, selecione "Usar valores diferentes para cada conversão" — o sistema enviará o valor real informado pelo vendedor.',
+            'Defina um "Valor padrão" como fallback caso o valor real não esteja disponível.',
+            'Em "Otimização de ações", selecione "Primária".',
+            'Copie o ID numérico da URL (?ctId=XXXXXXXXXX) e cole no campo acima.',
           ],
-          example: 'AW-123456789/MnO789PqRsT',
-          note: 'O sistema tenta enviar o valor real da venda. O "Valor padrão" é usado apenas como fallback quando o valor não está disponível.',
+          example: '7624173251',
+          note: 'O sistema envia o valor real da venda. O "Valor padrão" é fallback quando o valor não está disponível.',
         }}
       >
         <Field
-          label="ID da ação de conversão"
+          label="ID da ação de conversão (ctId numérico)"
           id="conv3"
           value={form.google_ads_conversion_converted}
           onChange={set('google_ads_conversion_converted')}
-          placeholder="AW-XXXXXXXXXX/XXXXX"
+          placeholder="7624173251"
+          hint="Número da URL do Google Ads: ?ctId=XXXXXXXXXX"
         />
         <Field
           label="Valor padrão (R$) — sobrescrito pelo valor real"

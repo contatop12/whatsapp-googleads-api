@@ -53,38 +53,45 @@ export function TenantConfigForm({ tenant: initial }: { tenant: Tenant }) {
       title: 'Ação de conversão — Novo Lead',
       steps: [
         'No Google Ads, clique em "Ferramentas e configurações" → "Medição" → "Conversões".',
-        'Clique em "+ Nova ação de conversão" e escolha "Site".',
-        'Selecione a categoria "Envio de lead" ou "Contato".',
-        'Dê um nome como "Novo Lead - WhatsApp" e configure o valor como 0.',
-        'Salve e copie o ID da conversão no formato AW-XXXXXXXXXX/XXXXX.',
+        'Clique em "+ Nova ação de conversão" e escolha "Importar".',
+        'Selecione "Cliques do Google (gclid)" e clique em continuar.',
+        'Escolha a categoria "Contato".',
+        'Dê um nome como "whatsapp_novo_lead" e configure o valor como 0.',
+        'Em "Otimização de ações", selecione "Secundária".',
+        'Salve e copie o ID numérico da URL: ads.google.com/aw/conversions/detail?ctId=XXXXXXXXXX',
+        'Cole apenas o número (ex: 7624173249) no campo acima.',
       ],
-      example: 'AW-123456789/AbCdEfGhIjK',
-      note: 'Disparada quando um novo lead entra no funil — primeira mensagem ou formulário.',
+      example: '7624173249',
+      note: 'Etapa 1 deve ser Secundária — é apenas sinal de chegada do lead, não deve influenciar o Smart Bidding.',
     },
     etapa2: {
       title: 'Ação de conversão — Lead Qualificado',
       steps: [
         'Crie uma nova ação de conversão no Google Ads.',
-        'Escolha a categoria "Qualificação de lead" ou "Interesse".',
-        'Dê um nome como "Lead Qualificado - CRM".',
+        'Escolha "Importar" → "Cliques do Google (gclid)".',
+        'Selecione a categoria "Lead qualificado".',
+        'Dê um nome como "whatsapp_qualificado".',
         'Para o valor, selecione "Usar o mesmo valor para cada conversão" e defina o valor fixo abaixo.',
-        'Copie o ID no formato AW-XXXXXXXXXX/XXXXX e cole no campo acima.',
+        'Em "Otimização de ações", selecione "Primária".',
+        'Copie o ID numérico da URL (?ctId=XXXXXXXXXX) e cole no campo acima.',
       ],
-      example: 'AW-123456789/XyZ123AbCdE',
+      example: '7624173250',
       note: 'O "Valor fixo" é enviado ao Google Ads toda vez que um lead é movido para esta etapa.',
     },
     etapa3: {
       title: 'Ação de conversão — Venda Convertida',
       steps: [
         'Crie uma nova ação de conversão no Google Ads.',
-        'Escolha a categoria "Compra" ou "Venda".',
-        'Dê um nome como "Venda Fechada - CRM".',
-        'Para o valor, selecione "Usar valores diferentes para cada conversão" — o sistema enviará o valor real.',
-        'Defina um "Valor padrão" como fallback quando o valor real não estiver disponível.',
-        'Copie o ID no formato AW-XXXXXXXXXX/XXXXX e cole no campo acima.',
+        'Escolha "Importar" → "Cliques do Google (gclid)".',
+        'Selecione a categoria "Compra" ou "Venda".',
+        'Dê um nome como "whatsapp_convertido".',
+        'Para o valor, selecione "Usar valores diferentes para cada conversão" — o sistema enviará o valor real informado pelo vendedor.',
+        'Defina um "Valor padrão" como fallback caso o valor real não esteja disponível.',
+        'Em "Otimização de ações", selecione "Primária".',
+        'Copie o ID numérico da URL (?ctId=XXXXXXXXXX) e cole no campo acima.',
       ],
-      example: 'AW-123456789/MnO789PqRsT',
-      note: 'O sistema tenta enviar o valor real da venda. O "Valor padrão" é usado apenas como fallback.',
+      example: '7624173251',
+      note: 'O sistema envia o valor real da venda. O "Valor padrão" é fallback quando o valor não está disponível.',
     },
   }
 
@@ -207,7 +214,7 @@ export function TenantConfigForm({ tenant: initial }: { tenant: Tenant }) {
                 <Info size={13} />
               </button>
             </div>
-            <Field label="ID da ação de conversão" value={gads.google_ads_conversion_new_lead} onChange={setG('google_ads_conversion_new_lead')} placeholder="AW-XXXXXXXXXX/XXXXX" />
+            <Field label="ID da ação (ctId numérico)" value={gads.google_ads_conversion_new_lead} onChange={setG('google_ads_conversion_new_lead')} placeholder="7624173249" hint="Número da URL: ?ctId=XXXXXXXXXX" />
           </div>
 
           <div className="border-t border-zinc-800 pt-4">
@@ -219,7 +226,7 @@ export function TenantConfigForm({ tenant: initial }: { tenant: Tenant }) {
               </button>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="ID da ação de conversão" value={gads.google_ads_conversion_qualified} onChange={setG('google_ads_conversion_qualified')} placeholder="AW-XXXXXXXXXX/XXXXX" />
+              <Field label="ID da ação (ctId numérico)" value={gads.google_ads_conversion_qualified} onChange={setG('google_ads_conversion_qualified')} placeholder="7624173250" hint="Número da URL: ?ctId=XXXXXXXXXX" />
               <Field label="Valor fixo (R$)" value={gads.conversion_value_qualified} onChange={setG('conversion_value_qualified')} type="number" placeholder="0.00" />
             </div>
           </div>
@@ -233,7 +240,7 @@ export function TenantConfigForm({ tenant: initial }: { tenant: Tenant }) {
               </button>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="ID da ação de conversão" value={gads.google_ads_conversion_converted} onChange={setG('google_ads_conversion_converted')} placeholder="AW-XXXXXXXXXX/XXXXX" />
+              <Field label="ID da ação (ctId numérico)" value={gads.google_ads_conversion_converted} onChange={setG('google_ads_conversion_converted')} placeholder="7624173251" hint="Número da URL: ?ctId=XXXXXXXXXX" />
               <Field label="Valor padrão (R$)" value={gads.conversion_value_converted} onChange={setG('conversion_value_converted')} type="number" placeholder="0.00" />
             </div>
           </div>
