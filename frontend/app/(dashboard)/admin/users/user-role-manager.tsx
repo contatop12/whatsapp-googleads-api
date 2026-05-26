@@ -68,7 +68,6 @@ export function UserRoleManager({ users: initialUsers, tenants }: Props) {
         <div className="divide-y divide-zinc-800">
           {users.map((u) => {
             const isSuperAdmin = u.role === 'super_admin'
-            const tenantName = u.tenant_id ? tenantMap[u.tenant_id]?.name : null
             const isSaving = saving === u.id
 
             return (

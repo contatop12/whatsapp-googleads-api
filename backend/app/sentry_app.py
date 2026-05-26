@@ -1,6 +1,7 @@
 import os
 
 import sentry_sdk
+from sentry_sdk import metrics as sentry_metrics
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 
