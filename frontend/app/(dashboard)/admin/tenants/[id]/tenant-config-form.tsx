@@ -8,7 +8,10 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
 import { WhatsAppQR } from '@/components/whatsapp/whatsapp-qr'
 import { WhatsAppInstancePicker } from '@/components/whatsapp/whatsapp-instance-picker'
-import { X, Plus, Globe, MessageCircle, Settings, Zap } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { X, Plus, Globe, MessageCircle, Settings, Zap, Info } from 'lucide-react'
+
+type HelpContent = { title: string; steps: string[]; example?: string; note?: string }
 
 function normalizeOrigin(value: string): string | null {
   const origin = value.trim().replace(/\/+$/, '')
@@ -32,6 +35,58 @@ export function TenantConfigForm({ tenant: initial }: { tenant: Tenant }) {
     conversion_value_converted: initial.conversion_value_converted?.toString() || '',
   })
   const [savingGads, setSavingGads] = useState(false)
+  const [helpOpen, setHelpOpen] = useState<string | null>(null)
+
+  const HELP: Record<string, HelpContent> = {
+    customer_id: {
+      title: 'Como encontrar seu Customer ID',
+      steps: [
+        'Acesse sua conta no Google Ads (ads.google.com).',
+        'Clique no ícone de engrenagem (⚙) no canto superior direito e selecione "Configurações".',
+        'Na seção "Detalhes da conta", localize o campo "ID do cliente".',
+        'Copie o número de 10 dígitos — ele aparece no formato XXX-XXX-XXXX.',
+        'Cole aqui sem os traços. Exemplo: se exibido como 123-456-7890, digite 1234567890.',
+      ],
+      note: 'Cada conta Google Ads tem um Customer ID único. Use o ID da conta que veiculará os anúncios.',
+    },
+    etapa1: {
+      title: 'Ação de conversão — Novo Lead',
+      steps: [
+        'No Google Ads, clique em "Ferramentas e configurações" → "Medição" → "Conversões".',
+        'Clique em "+ Nova ação de conversão" e escolha "Site".',
+        'Selecione a categoria "Envio de lead" ou "Contato".',
+        'Dê um nome como "Novo Lead - WhatsApp" e configure o valor como 0.',
+        'Salve e copie o ID da conversão no formato AW-XXXXXXXXXX/XXXXX.',
+      ],
+      example: 'AW-123456789/AbCdEfGhIjK',
+      note: 'Disparada quando um novo lead entra no funil — primeira mensagem ou formulário.',
+    },
+    etapa2: {
+      title: 'Ação de conversão — Lead Qualificado',
+      steps: [
+        'Crie uma nova ação de conversão no Google Ads.',
+        'Escolha a categoria "Qualificação de lead" ou "Interesse".',
+        'Dê um nome como "Lead Qualificado - CRM".',
+        'Para o valor, selecione "Usar o mesmo valor para cada conversão" e defina o valor fixo abaixo.',
+        'Copie o ID no formato AW-XXXXXXXXXX/XXXXX e cole no campo acima.',
+      ],
+      example: 'AW-123456789/XyZ123AbCdE',
+      note: 'O "Valor fixo" é enviado ao Google Ads toda vez que um lead é movido para esta etapa.',
+    },
+    etapa3: {
+      title: 'Ação de conversão — Venda Convertida',
+      steps: [
+        'Crie uma nova ação de conversão no Google Ads.',
+        'Escolha a categoria "Compra" ou "Venda".',
+        'Dê um nome como "Venda Fechada - CRM".',
+        'Para o valor, selecione "Usar valores diferentes para cada conversão" — o sistema enviará o valor real.',
+        'Defina um "Valor padrão" como fallback quando o valor real não estiver disponível.',
+        'Copie o ID no formato AW-XXXXXXXXXX/XXXXX e cole no campo acima.',
+      ],
+      example: 'AW-123456789/MnO789PqRsT',
+      note: 'O sistema tenta enviar o valor real da venda. O "Valor padrão" é usado apenas como fallback.',
+    },
+  }
 
   const [qualified, setQualified] = useState<string[]>(initial.keywords_qualified || [])
   const [converted, setConverted] = useState<string[]>(initial.keywords_converted || [])
@@ -135,21 +190,34 @@ export function TenantConfigForm({ tenant: initial }: { tenant: Tenant }) {
 
       <Section title="Google Ads" icon={<Settings size={14} />}>
         <div className="space-y-5">
-          <Field label="Customer ID" value={gads.google_ads_customer_id} onChange={setG('google_ads_customer_id')} placeholder="1234567890" hint="Sem traços." />
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Field label="Customer ID" value={gads.google_ads_customer_id} onChange={setG('google_ads_customer_id')} placeholder="1234567890" hint="Sem traços." />
+            </div>
+            <button onClick={() => setHelpOpen('customer_id')} className="mb-0.5 p-1.5 text-zinc-600 hover:text-[#7F77DD] hover:bg-[#7F77DD]/10 rounded transition-colors" title="Como encontrar o Customer ID">
+              <Info size={14} />
+            </button>
+          </div>
 
           <div className="border-t border-zinc-800 pt-4">
-            <p className="text-[10px] font-medium text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              Etapa 1 — Novo Lead
-            </p>
+              <p className="text-[10px] font-medium text-amber-400 uppercase tracking-widest flex-1">Etapa 1 — Novo Lead</p>
+              <button onClick={() => setHelpOpen('etapa1')} className="p-1 text-zinc-600 hover:text-[#7F77DD] hover:bg-[#7F77DD]/10 rounded transition-colors" title="Como configurar">
+                <Info size={13} />
+              </button>
+            </div>
             <Field label="ID da ação de conversão" value={gads.google_ads_conversion_new_lead} onChange={setG('google_ads_conversion_new_lead')} placeholder="AW-XXXXXXXXXX/XXXXX" />
           </div>
 
           <div className="border-t border-zinc-800 pt-4">
-            <p className="text-[10px] font-medium text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-              Etapa 2 — Qualificado
-            </p>
+              <p className="text-[10px] font-medium text-blue-400 uppercase tracking-widest flex-1">Etapa 2 — Qualificado</p>
+              <button onClick={() => setHelpOpen('etapa2')} className="p-1 text-zinc-600 hover:text-[#7F77DD] hover:bg-[#7F77DD]/10 rounded transition-colors" title="Como configurar">
+                <Info size={13} />
+              </button>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <Field label="ID da ação de conversão" value={gads.google_ads_conversion_qualified} onChange={setG('google_ads_conversion_qualified')} placeholder="AW-XXXXXXXXXX/XXXXX" />
               <Field label="Valor fixo (R$)" value={gads.conversion_value_qualified} onChange={setG('conversion_value_qualified')} type="number" placeholder="0.00" />
@@ -157,10 +225,13 @@ export function TenantConfigForm({ tenant: initial }: { tenant: Tenant }) {
           </div>
 
           <div className="border-t border-zinc-800 pt-4">
-            <p className="text-[10px] font-medium text-emerald-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              Etapa 3 — Convertido
-            </p>
+              <p className="text-[10px] font-medium text-emerald-400 uppercase tracking-widest flex-1">Etapa 3 — Convertido</p>
+              <button onClick={() => setHelpOpen('etapa3')} className="p-1 text-zinc-600 hover:text-[#7F77DD] hover:bg-[#7F77DD]/10 rounded transition-colors" title="Como configurar">
+                <Info size={13} />
+              </button>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <Field label="ID da ação de conversão" value={gads.google_ads_conversion_converted} onChange={setG('google_ads_conversion_converted')} placeholder="AW-XXXXXXXXXX/XXXXX" />
               <Field label="Valor padrão (R$)" value={gads.conversion_value_converted} onChange={setG('conversion_value_converted')} type="number" placeholder="0.00" />
@@ -172,6 +243,41 @@ export function TenantConfigForm({ tenant: initial }: { tenant: Tenant }) {
           </Button>
         </div>
       </Section>
+
+      {/* Help dialogs */}
+      {Object.entries(HELP).map(([key, help]) => (
+        <Dialog key={key} open={helpOpen === key} onOpenChange={(o) => !o && setHelpOpen(null)}>
+          <DialogContent className="bg-zinc-900 border-zinc-800 max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-zinc-100 flex items-center gap-2">
+                <Info size={16} className="text-[#7F77DD]" />
+                {help.title}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-1">
+              <ol className="space-y-2.5">
+                {help.steps.map((step, i) => (
+                  <li key={i} className="flex gap-3 text-sm text-zinc-300">
+                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#7F77DD]/20 text-[#7F77DD] text-[10px] font-bold flex items-center justify-center mt-0.5">
+                      {i + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+              {help.example && (
+                <div className="rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-2">
+                  <p className="text-[10px] text-zinc-500 mb-1 uppercase tracking-widest">Exemplo</p>
+                  <p className="text-sm font-mono text-[#7F77DD]">{help.example}</p>
+                </div>
+              )}
+              {help.note && (
+                <p className="text-xs text-zinc-500 border-l-2 border-zinc-700 pl-3">{help.note}</p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      ))}
 
       <Section title="Palavras-chave" icon={<Zap size={14} />}>
         <div className="space-y-4">
