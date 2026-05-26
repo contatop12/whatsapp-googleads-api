@@ -4,24 +4,27 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:pointer-events-none disabled:opacity-40',
+  'inline-flex items-center justify-center whitespace-nowrap text-sm font-black uppercase tracking-wider transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8192C]/60 disabled:pointer-events-none disabled:opacity-40 border-2 rounded-none active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
   {
     variants: {
       variant: {
         default:
-          'bg-accent text-white hover:bg-accent-dim active:bg-accent-dim shadow-[0_0_12px_rgba(127,119,221,0.3)]',
+          'bg-[#E8192C] text-white border-black shadow-comic hover:bg-[#C41525]',
         outline:
-          'border border-zinc-700 bg-transparent text-zinc-200 hover:bg-zinc-800 hover:border-zinc-600',
-        ghost: 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800',
+          'bg-transparent text-[#E8192C] border-[#E8192C] shadow-comic-red hover:bg-[#E8192C]/10',
+        ghost:
+          'border-transparent shadow-none text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 hover:border-zinc-700',
         destructive:
-          'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300',
+          'bg-transparent text-red-400 border-red-500 shadow-comic hover:bg-red-500/10',
         secondary:
-          'bg-zinc-800 text-zinc-200 hover:bg-zinc-700',
+          'bg-[#FFD700] text-black border-black shadow-comic hover:bg-[#D4B800]',
+        blue:
+          'bg-[#1455C0] text-white border-black shadow-comic hover:bg-[#0D3D99]',
       },
       size: {
         default: 'h-9 px-4 py-2',
-        sm: 'h-8 rounded-md px-3 text-xs',
-        lg: 'h-11 px-6',
+        sm: 'h-8 px-3 text-xs',
+        lg: 'h-11 px-6 text-base',
         icon: 'h-9 w-9',
       },
     },

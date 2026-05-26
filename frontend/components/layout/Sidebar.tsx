@@ -40,9 +40,9 @@ const roleLabel: Record<string, string> = {
 }
 
 const roleBadgeColor: Record<string, string> = {
-  super_admin: 'bg-amber-500/20 text-amber-400',
-  admin: 'bg-accent/20 text-[#7F77DD]',
-  client: 'bg-emerald-500/20 text-emerald-400',
+  super_admin: 'border-amber-400 text-amber-400',
+  admin: 'border-[#E8192C] text-[#E8192C]',
+  client: 'border-emerald-400 text-emerald-400',
 }
 
 function initials(name: string | null, email: string) {
@@ -78,14 +78,14 @@ export function Sidebar() {
     <TooltipProvider delayDuration={300}>
       <aside
         className={cn(
-          'hidden md:flex flex-col bg-zinc-900 border-r border-zinc-800 shrink-0 transition-all duration-200',
+          'hidden md:flex flex-col bg-zinc-950 border-r-2 border-zinc-700 shrink-0 transition-all duration-200 halftone',
           collapsed ? 'w-12' : 'w-56'
         )}
       >
         {/* Logo + toggle */}
         <div
           className={cn(
-            'flex items-center h-14 border-b border-zinc-800',
+            'flex items-center h-14 border-b-2 border-zinc-700',
             collapsed ? 'justify-center' : 'px-4 justify-between'
           )}
         >
@@ -97,7 +97,7 @@ export function Sidebar() {
           )}
           <button
             onClick={toggle}
-            className="p-1.5 text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 rounded-md transition-colors"
+            className="p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-700 transition-colors"
             aria-label={collapsed ? 'Expandir menu' : 'Colapsar menu'}
           >
             {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
@@ -144,15 +144,15 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-zinc-800 p-2 space-y-1">
+        <div className="border-t-2 border-zinc-700 p-2 space-y-1">
           {!collapsed ? (
             <div className="flex items-center gap-2 px-2 py-1.5">
-              <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-[10px] font-bold text-[#7F77DD] shrink-0">
+              <div className="w-7 h-7 bg-[#E8192C] flex items-center justify-center text-[10px] font-black text-white shrink-0 border-2 border-black shadow-comic">
                 {initials(user.name, user.email)}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-zinc-200 truncate">{user.name ?? user.email}</p>
-                <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full', roleBadgeColor[user.role] ?? 'text-zinc-500')}>
+                <p className="text-xs text-zinc-200 truncate font-semibold">{user.name ?? user.email}</p>
+                <span className={cn('text-[9px] px-1.5 py-0.5 border font-black uppercase tracking-wider', roleBadgeColor[user.role] ?? 'text-zinc-500')}>
                   {roleLabel[user.role]}
                 </span>
               </div>
@@ -160,7 +160,7 @@ export function Sidebar() {
           ) : (
             <NavItemTooltip label={user.name ?? user.email}>
               <div className="flex justify-center py-1">
-                <div className="w-7 h-7 rounded-full bg-accent/20 flex items-center justify-center text-[10px] font-bold text-[#7F77DD]">
+                <div className="w-7 h-7 bg-[#E8192C] flex items-center justify-center text-[10px] font-black text-white border-2 border-black shadow-comic">
                   {initials(user.name, user.email)}
                 </div>
               </div>
@@ -172,7 +172,7 @@ export function Sidebar() {
               <NavItemTooltip label="Sair">
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-200 hover:bg-zinc-800 rounded-md transition-colors"
+                  className="w-full flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
                 >
                   <LogOut size={14} />
                 </button>
@@ -180,7 +180,7 @@ export function Sidebar() {
             ) : (
               <button
                 type="submit"
-                className="flex items-center gap-2 px-2 py-2 text-xs text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 rounded-md w-full transition-colors"
+                className="flex items-center gap-2 px-2 py-2 text-xs text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 w-full transition-colors font-black uppercase tracking-wider"
               >
                 <LogOut size={13} />
                 Sair
@@ -196,7 +196,10 @@ export function Sidebar() {
 function SectionLabel({ label, collapsed, top }: { label: string; collapsed: boolean; top?: boolean }) {
   if (collapsed) return <div className={top ? 'h-2' : 'h-1'} />
   return (
-    <p className={cn('px-2 pb-1 text-[10px] font-medium text-zinc-600 uppercase tracking-widest', top ? 'pt-4' : 'pt-2')}>
+    <p className={cn(
+      'px-2 pb-1 text-[9px] font-black text-zinc-600 uppercase tracking-[0.2em] border-b border-zinc-800',
+      top ? 'pt-4' : 'pt-2'
+    )}>
       {label}
     </p>
   )
@@ -206,7 +209,9 @@ function NavItemTooltip({ label, children }: { label: string; children: React.Re
   return (
     <Tooltip>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent side="right">{label}</TooltipContent>
+      <TooltipContent side="right" className="rounded-none border-2 border-zinc-600 bg-zinc-900 text-zinc-100 font-black uppercase text-[10px] tracking-wider shadow-comic">
+        {label}
+      </TooltipContent>
     </Tooltip>
   )
 }
@@ -231,15 +236,15 @@ function NavItem({
   const isAmber = accent === 'amber'
 
   const activeClass = isAmber
-    ? 'border-l-2 border-amber-500 bg-amber-500/10 text-amber-300 pl-[6px]'
-    : 'border-l-2 border-[#7F77DD] bg-zinc-800/60 text-zinc-100 pl-[6px]'
+    ? 'border-l-4 border-amber-400 bg-amber-500/15 text-amber-300 pl-[4px]'
+    : 'border-l-4 border-[#E8192C] bg-[#E8192C]/10 text-zinc-100 pl-[4px]'
 
   const inactiveClass = isAmber
-    ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 px-2'
-    : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 px-2'
+    ? 'border-l-4 border-transparent text-amber-500 hover:text-amber-300 hover:bg-amber-500/10 px-2'
+    : 'border-l-4 border-transparent text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800/80 px-2'
 
-  const iconActiveClass = isAmber ? 'text-amber-400' : 'text-[#7F77DD]'
-  const iconInactiveClass = isAmber ? 'text-amber-500' : 'text-zinc-600'
+  const iconActiveClass = isAmber ? 'text-amber-400' : 'text-[#E8192C]'
+  const iconInactiveClass = isAmber ? 'text-amber-600' : 'text-zinc-600'
 
   if (collapsed) {
     return (
@@ -247,14 +252,14 @@ function NavItem({
         <Link
           href={href}
           className={cn(
-            'flex items-center justify-center p-2 rounded-md transition-colors',
+            'flex items-center justify-center p-2 transition-colors',
             active
               ? isAmber
-                ? 'bg-amber-500/10 text-amber-300'
-                : 'bg-accent/10 text-[#7F77DD]'
+                ? 'bg-amber-500/15 text-amber-300'
+                : 'bg-[#E8192C]/10 text-[#E8192C]'
               : isAmber
-                ? 'text-amber-400 hover:bg-amber-500/10'
-                : 'text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200'
+                ? 'text-amber-500 hover:bg-amber-500/10'
+                : 'text-zinc-600 hover:bg-zinc-800 hover:text-zinc-200'
           )}
         >
           {icon}
@@ -267,7 +272,7 @@ function NavItem({
     <Link
       href={href}
       className={cn(
-        'flex items-center gap-2.5 py-2 rounded-md text-sm transition-colors',
+        'flex items-center gap-2.5 py-2 text-sm transition-colors font-semibold',
         active ? activeClass : inactiveClass
       )}
     >

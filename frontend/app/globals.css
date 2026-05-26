@@ -2,27 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Bangers&display=swap');
 
 :root {
-  --bg-base: #09090b;
-  --bg-surface: #18181b;
-  --bg-elevated: #27272a;
-  --border: #3f3f46;
-  --border-subtle: #27272a;
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --accent: #7F77DD;
-  --accent-dim: #6B63CC;
-  --accent-light: #A09AE8;
-  --accent-glow: rgba(127, 119, 221, 0.15);
-  --amber: #f59e0b;
-  --amber-glow: rgba(245, 158, 11, 0.15);
-  --blue: #3b82f6;
-  --blue-glow: rgba(59, 130, 246, 0.15);
-  --red: #ef4444;
-  --red-glow: rgba(239, 68, 68, 0.15);
+  --bg-base: #0A0A0C;
+  --bg-surface: #131316;
+  --bg-elevated: #1C1C21;
+  --border: #2E2E38;
+  --border-strong: #4A4A5A;
+  --text-primary: #F0F0EC;
+  --text-secondary: #ABABBA;
+  --text-muted: #6A6A7A;
+
+  /* Spider-Man Pop Art palette */
+  --accent: #E8192C;
+  --accent-dim: #C41525;
+  --accent-light: #FF4D5E;
+  --comic-blue: #1455C0;
+  --comic-blue-dim: #0D3D99;
+  --comic-yellow: #FFD700;
+  --comic-yellow-dim: #D4B800;
+
   --background: var(--bg-base);
   --foreground: var(--text-primary);
 }
@@ -52,17 +52,17 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
-  border-radius: 2px;
+  background: var(--border-strong);
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: #6A6A7A;
 }
 
 /* Selection */
 ::selection {
-  background: rgba(127, 119, 221, 0.25);
-  color: #ede9fe;
+  background: rgba(232, 25, 44, 0.35);
+  color: #fff;
 }
 
 /* Mono data */
@@ -70,29 +70,50 @@ body {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Glow utilities */
-.glow-accent {
-  box-shadow: 0 0 20px var(--accent-glow), 0 0 40px rgba(127, 119, 221, 0.05);
-}
-.glow-emerald {
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.15), 0 0 40px rgba(16, 185, 129, 0.05);
-}
-.glow-amber {
-  box-shadow: 0 0 20px var(--amber-glow), 0 0 40px rgba(245, 158, 11, 0.05);
-}
-.glow-blue {
-  box-shadow: 0 0 20px var(--blue-glow), 0 0 40px rgba(59, 130, 246, 0.05);
+/* Comic font */
+.font-comic {
+  font-family: 'Bangers', 'Syne', cursive;
+  letter-spacing: 0.05em;
 }
 
-/* Noise texture overlay */
-.noise::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.4;
+/* Halftone dot texture */
+.halftone {
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.055) 1.2px,
+    transparent 1.2px
+  );
+  background-size: 12px 12px;
+}
+
+/* Comic offset shadows */
+.shadow-comic {
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.95);
+}
+.shadow-comic-lg {
+  box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.95);
+}
+.shadow-comic-red {
+  box-shadow: 3px 3px 0px var(--accent-dim);
+}
+.shadow-comic-blue {
+  box-shadow: 3px 3px 0px var(--comic-blue-dim);
+}
+.shadow-comic-yellow {
+  box-shadow: 3px 3px 0px var(--comic-yellow-dim);
+}
+
+/* Comic border utility */
+.border-comic {
+  border: 2px solid var(--border-strong);
+}
+.border-comic-strong {
+  border: 2px solid var(--text-muted);
+}
+
+/* Panel line divider (comic gutter) */
+.panel-divider {
+  border-top: 2px solid var(--border-strong);
 }
 
 /* Fade-in animation */

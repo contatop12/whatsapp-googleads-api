@@ -28,7 +28,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <AuthProvider user={authUser}>
       <div className="flex h-screen bg-zinc-950 overflow-hidden">
         <Sidebar />
-        <main className="flex-1 overflow-auto bg-zinc-950 pb-16 md:pb-0">
+        <main className="flex-1 overflow-auto bg-[#0A0A0C] halftone pb-16 md:pb-0">
           {children}
         </main>
         <BottomNav />
