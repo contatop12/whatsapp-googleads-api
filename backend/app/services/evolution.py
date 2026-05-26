@@ -25,11 +25,13 @@ def _expected_webhook_url(slug: str) -> str:
 
 def _webhook_body(url: str) -> dict:
     return {
-        "enabled": True,
-        "url": url,
-        "webhookByEvents": True,
-        "webhookBase64": False,
-        "events": WEBHOOK_EVENTS,
+        "webhook": {
+            "enabled": True,
+            "url": url,
+            "webhookByEvents": True,
+            "webhookBase64": False,
+            "events": WEBHOOK_EVENTS,
+        }
     }
 
 
