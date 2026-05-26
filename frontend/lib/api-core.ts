@@ -1,4 +1,10 @@
-import type { Lead, Tenant } from '@/lib/api-types'
+import type {
+  EvolutionInstance,
+  Lead,
+  Tenant,
+  WhatsAppLinkResult,
+  WhatsAppWebhookStatus,
+} from '@/lib/api-types'
 
 export const API_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
@@ -84,6 +90,22 @@ export function buildApi(apiFetch: ApiFetch) {
         apiFetch<{ evolution_instance_status: string }>(
           `/api/tenants/${tenantId}/whatsapp/status`
         ),
+      webhook: (tenantId: string) =>
+        apiFetch<WhatsAppWebhookStatus>(`/api/tenants/${tenantId}/whatsapp/webhook`),
+      activateWebhook: (tenantId: string) =>
+        apiFetch<WhatsAppWebhookStatus>(`/api/tenants/${tenantId}/whatsapp/webhook`, {
+          method: 'POST',
+        }),
+      listInstances: (tenantId: string) =>
+        apiFetch<EvolutionInstance[]>(`/api/tenants/${tenantId}/whatsapp/instances`),
+      linkInstance: (tenantId: string, instanceName: string) =>
+        apiFetch<WhatsAppLinkResult>(`/api/tenants/${tenantId}/whatsapp/link`, {
+          method: 'POST',
+          body: JSON.stringify({ instance_name: instanceName }),
+        }),
+    },
+    evolution: {
+      listInstances: () => apiFetch<EvolutionInstance[]>('/api/evolution/instances'),
     },
   }
 }

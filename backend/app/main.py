@@ -58,6 +58,7 @@ app.include_router(webhooks.router)
 app.include_router(leads.router)
 app.include_router(tenants.router)
 app.include_router(whatsapp.router)
+app.include_router(whatsapp.evolution_router)
 app.include_router(debug.router)
 
 

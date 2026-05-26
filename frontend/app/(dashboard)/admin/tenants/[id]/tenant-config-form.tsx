@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
 import { WhatsAppQR } from '@/components/whatsapp/whatsapp-qr'
+import { WhatsAppInstancePicker } from '@/components/whatsapp/whatsapp-instance-picker'
 import { X, Plus, Globe, MessageCircle, Settings, Zap } from 'lucide-react'
 
 function normalizeOrigin(value: string): string | null {
@@ -18,6 +19,9 @@ function normalizeOrigin(value: string): string | null {
 export function TenantConfigForm({ tenant: initial }: { tenant: Tenant }) {
   const { toast } = useToast()
   const tenantId = initial.id
+  const [waRefreshKey, setWaRefreshKey] = useState(0)
+  const [linkedInstance, setLinkedInstance] = useState(initial.evolution_api_instance)
+  const [waStatus, setWaStatus] = useState(initial.evolution_instance_status)
 
   const [gads, setGads] = useState({
     google_ads_customer_id: initial.google_ads_customer_id || '',
@@ -102,7 +106,31 @@ export function TenantConfigForm({ tenant: initial }: { tenant: Tenant }) {
   return (
     <div className="space-y-8">
       <Section title="WhatsApp" icon={<MessageCircle size={14} />}>
-        <WhatsAppQR tenantId={tenantId} initialStatus={initial.evolution_instance_status} />
+        <div className="space-y-4">
+          <WhatsAppInstancePicker
+            tenantId={tenantId}
+            tenantName={initial.name}
+            currentInstance={linkedInstance}
+            onLinked={(result) => {
+              setLinkedInstance(result.instance.instance_name)
+              setWaStatus(result.evolution_instance_status as typeof waStatus)
+              setWaRefreshKey((k) => k + 1)
+            }}
+          />
+          <div className="relative py-2">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-zinc-800" />
+            </div>
+            <p className="relative mx-auto w-fit bg-zinc-900 px-3 text-[10px] uppercase tracking-widest text-zinc-600">
+              ou conectar via QR
+            </p>
+          </div>
+          <WhatsAppQR
+            key={waRefreshKey}
+            tenantId={tenantId}
+            initialStatus={waStatus}
+          />
+        </div>
       </Section>
 
       <Section title="Google Ads" icon={<Settings size={14} />}>

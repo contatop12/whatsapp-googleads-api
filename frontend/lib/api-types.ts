@@ -31,9 +31,42 @@ export type Tenant = {
   keywords_qualified: string[]
   keywords_converted: string[]
   allowed_origins: string[]
+  evolution_api_instance: string | null
   evolution_instance_status: 'disconnected' | 'connecting' | 'connected'
   evolution_qr_code: string | null
   created_at?: string
+}
+
+export type EvolutionLinkedTenant = {
+  id: string
+  name: string
+  slug: string
+}
+
+export type EvolutionInstance = {
+  instance_name: string
+  instance_id: string | null
+  phone: string | null
+  profile_name: string | null
+  status: 'connected' | 'disconnected' | 'connecting'
+  evolution_status: string
+  linked_tenant: EvolutionLinkedTenant | null
+}
+
+export type WhatsAppLinkResult = {
+  instance: EvolutionInstance
+  evolution_instance_status: string
+  webhook: WhatsAppWebhookStatus | null
+  webhook_error: string | null
+}
+
+export type WhatsAppWebhookStatus = {
+  enabled: boolean
+  url: string | null
+  expected_url: string
+  active: boolean
+  events: string[]
+  error?: string
 }
 
 export type UserRole = 'super_admin' | 'admin' | 'client'

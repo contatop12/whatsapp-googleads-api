@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { createClient } from '@/lib/supabase/client'
 import { api } from '@/lib/api'
-import { CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { CheckCircle, XCircle, RefreshCw, Webhook } from 'lucide-react'
+import type { WhatsAppWebhookStatus } from '@/lib/api-types'
 
 interface Props {
   tenantId: string
@@ -18,6 +19,46 @@ export function WhatsAppQR({ tenantId, initialStatus }: Props) {
   const [qrBase64, setQrBase64] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [webhook, setWebhook] = useState<WhatsAppWebhookStatus | null>(null)
+  const [webhookLoading, setWebhookLoading] = useState(false)
+
+  const fetchWebhook = useCallback(async () => {
+    setWebhookLoading(true)
+    try {
+      const data = await api.whatsapp.webhook(tenantId)
+      setWebhook(data)
+    } catch (err) {
+      setWebhook({
+        enabled: false,
+        url: null,
+        expected_url: '',
+        active: false,
+        events: [],
+        error: err instanceof Error ? err.message : 'Erro ao verificar webhook',
+      })
+    } finally {
+      setWebhookLoading(false)
+    }
+  }, [tenantId])
+
+  const activateWebhook = useCallback(async () => {
+    setWebhookLoading(true)
+    try {
+      const data = await api.whatsapp.activateWebhook(tenantId)
+      setWebhook(data)
+    } catch (err) {
+      setWebhook({
+        enabled: false,
+        url: null,
+        expected_url: '',
+        active: false,
+        events: [],
+        error: err instanceof Error ? err.message : 'Erro ao ativar webhook',
+      })
+    } finally {
+      setWebhookLoading(false)
+    }
+  }, [tenantId])
 
   const fetchQR = useCallback(async () => {
     setLoading(true)
@@ -72,6 +113,10 @@ export function WhatsAppQR({ tenantId, initialStatus }: Props) {
     if (status !== 'connected') fetchQR()
   }, [status, fetchQR])
 
+  useEffect(() => {
+    if (status === 'connected') fetchWebhook()
+  }, [status, fetchWebhook])
+
   if (error) {
     return (
       <div className="space-y-4">
@@ -95,20 +140,90 @@ export function WhatsAppQR({ tenantId, initialStatus }: Props) {
   }
 
   if (status === 'connected') {
+    const webhookActive = webhook?.active
+    const webhookError = webhook?.error
+
     return (
-      <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-            <CheckCircle size={20} className="text-emerald-400" />
+      <div className="space-y-3">
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <CheckCircle size={20} className="text-emerald-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-emerald-300 text-sm">WhatsApp Conectado</p>
+              <p className="text-xs text-emerald-600 mt-0.5">
+                Instância ativa na Evolution — mensagens chegam via webhook
+              </p>
+            </div>
+            <span className="ml-auto flex items-center gap-1.5 text-xs text-emerald-600">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              online
+            </span>
           </div>
-          <div>
-            <p className="font-semibold text-emerald-300 text-sm">WhatsApp Conectado</p>
-            <p className="text-xs text-emerald-600 mt-0.5">Mensagens sendo recebidas normalmente</p>
+        </div>
+
+        <div
+          className={`rounded-xl border p-4 ${
+            webhookActive
+              ? 'border-blue-500/20 bg-blue-500/5'
+              : 'border-amber-500/20 bg-amber-500/5'
+          }`}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className={`w-9 h-9 rounded-full flex items-center justify-center border ${
+                webhookActive
+                  ? 'bg-blue-500/10 border-blue-500/20'
+                  : 'bg-amber-500/10 border-amber-500/20'
+              }`}
+            >
+              <Webhook
+                size={18}
+                className={webhookActive ? 'text-blue-400' : 'text-amber-400'}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p
+                className={`font-semibold text-sm ${
+                  webhookActive ? 'text-blue-300' : 'text-amber-300'
+                }`}
+              >
+                {webhookLoading && !webhook
+                  ? 'Verificando webhook...'
+                  : webhookActive
+                    ? 'Webhook ativo'
+                    : 'Webhook inativo ou incorreto'}
+              </p>
+              {webhook?.expected_url && (
+                <p className="text-[11px] text-zinc-500 mt-1 font-mono break-all">
+                  {webhook.expected_url}
+                </p>
+              )}
+              {webhook?.url && webhook.url !== webhook.expected_url && (
+                <p className="text-[11px] text-amber-600 mt-1 font-mono break-all">
+                  URL atual: {webhook.url}
+                </p>
+              )}
+              {webhookError && (
+                <p className="text-[11px] text-red-500 mt-1">{webhookError}</p>
+              )}
+            </div>
           </div>
-          <span className="ml-auto flex items-center gap-1.5 text-xs text-emerald-600">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            online
-          </span>
+          <div className="flex gap-2 mt-3">
+            <Button
+              onClick={activateWebhook}
+              variant="outline"
+              size="sm"
+              disabled={webhookLoading}
+            >
+              <RefreshCw size={13} className={`mr-1.5 ${webhookLoading ? 'animate-spin' : ''}`} />
+              {webhookActive ? 'Reconfigurar webhook' : 'Ativar webhook'}
+            </Button>
+            <Button onClick={fetchWebhook} variant="ghost" size="sm" disabled={webhookLoading}>
+              Verificar
+            </Button>
+          </div>
         </div>
       </div>
     )

@@ -53,6 +53,16 @@
 |--------|------|-----------|
 | GET | `/api/tenants/{tenant_id}/whatsapp/qr` | QR code para conectar WhatsApp |
 | GET | `/api/tenants/{tenant_id}/whatsapp/status` | Status da conexão WhatsApp |
+| GET | `/api/tenants/{tenant_id}/whatsapp/webhook` | Consulta webhook configurado na Evolution |
+| POST | `/api/tenants/{tenant_id}/whatsapp/webhook` | Ativa/reconfigura webhook na Evolution |
+| GET | `/api/tenants/{tenant_id}/whatsapp/instances` | Lista instâncias/números na Evolution **(admin)** |
+| POST | `/api/tenants/{tenant_id}/whatsapp/link` | Associa instância Evolution ao cliente **(admin)** |
+
+### Evolution (admin global)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/api/evolution/instances` | Lista todas as instâncias na Evolution |
 
 ---
 
