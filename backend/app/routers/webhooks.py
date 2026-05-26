@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, HTTPException
 from datetime import datetime, timezone, timedelta
 
@@ -5,6 +6,7 @@ from app.database import get_db
 from app.services.classifier import classify_message
 from app.services.pipeline import advance_stage, record_first_message
 from app.services.evolution import handle_connection_update
+from app.services.notifications import notify_new_lead
 import logfire
 
 router = APIRouter()
@@ -91,6 +93,7 @@ async def evolution_webhook(slug: str, payload: dict):
                 }).execute()
                 lead = insert_resp.data[0]
                 logfire.info("new_lead_from_webhook", phone=phone, tenant=slug)
+                asyncio.create_task(notify_new_lead(str(tenant["id"]), lead))
             else:
                 lead = lead_resp.data[0]
 

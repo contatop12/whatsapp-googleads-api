@@ -61,6 +61,9 @@ class Settings(BaseSettings):
     evolution_api_base_url: str = ""
     evolution_api_global_key: str = ""
 
+    resend_api_key: str = ""
+    resend_from_email: str = "notificacoes@gzapi.com.br"
+
     ipapi_key: str = ""
     sentry_dsn: str = ""
     sentry_auth_token: str = ""

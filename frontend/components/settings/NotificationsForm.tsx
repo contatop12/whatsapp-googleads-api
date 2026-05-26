@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/components/ui/use-toast'
 import { useAuth } from '@/contexts/auth-context'
+import { Mail } from 'lucide-react'
 
 type Prefs = {
   lead_stage_changed: boolean
@@ -66,6 +67,11 @@ export function NotificationsForm() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#7F77DD]/10 border border-[#7F77DD]/20">
+        <Mail size={13} className="text-[#7F77DD] shrink-0" />
+        <p className="text-xs text-zinc-400">Notificações enviadas para <span className="text-zinc-200">{user.email}</span></p>
+      </div>
+
       {(Object.keys(labels) as Array<keyof Prefs>).map((key) => (
         <div key={key} className="flex items-start justify-between gap-4">
           <div>

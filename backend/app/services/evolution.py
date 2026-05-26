@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 import logfire
 import sentry_sdk
@@ -409,4 +410,6 @@ async def handle_connection_update(tenant_slug: str, state: str, tenant: dict) -
         sentry_sdk.capture_message(
             f"WhatsApp desconectado: tenant {tenant_slug}", level="warning"
         )
+        from app.services.notifications import notify_whatsapp_disconnected
+        asyncio.create_task(notify_whatsapp_disconnected(str(tenant["id"]), tenant_slug))
         await provision_instance(tenant)

@@ -1,6 +1,11 @@
+import asyncio
 from datetime import datetime, timezone
 from app.database import get_db
 from app.services.google_ads import upload_conversion
+from app.services.notifications import (
+    notify_lead_stage_changed,
+    notify_conversion_rejected,
+)
 import logfire
 import sentry_sdk
 
@@ -203,10 +208,18 @@ async def advance_stage(
         google_ads_status=upload_result.get("status"),
     )
 
+    tenant_id = str(lead["tenant_id"])
+    asyncio.create_task(
+        notify_lead_stage_changed(tenant_id, updated_lead, lead["stage"], new_stage)
+    )
+
     if upload_result.get("status") == "rejected":
         sentry_sdk.capture_message(
             f"Google Ads conversion rejected: lead {lead['id']} stage {new_stage}",
             level="error",
+        )
+        asyncio.create_task(
+            notify_conversion_rejected(tenant_id, updated_lead, new_stage, upload_result.get("response", {}))
         )
 
     return updated_lead
