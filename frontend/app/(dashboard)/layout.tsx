@@ -1,9 +1,9 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getUserProfile } from '@/lib/tenant'
 import { LayoutGrid, BarChart3, Settings, LogOut, MessageCircle, Globe, Zap, Shield, Home } from 'lucide-react'
-import { GZapiLogo } from '@/components/gzapi-logo'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -22,19 +22,27 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <aside className="w-56 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0">
         {/* Logo */}
         <div className="px-4 py-4 border-b border-zinc-800">
-          <div className="flex items-center gap-2.5">
-            <GZapiLogo size={28} />
-            <div>
-              <p className="text-sm font-bold text-zinc-100 leading-none tracking-tight">GZapi</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">
-                {isSuperAdmin ? (
-                  <span className="text-amber-500">Super Admin</span>
-                ) : (
-                  'Pipeline'
-                )}
-              </p>
-            </div>
-          </div>
+          <Link
+            href="/home"
+            className="block rounded-md outline-none ring-emerald-500/50 focus-visible:ring-2 hover:opacity-90 transition-opacity"
+            aria-label="Ir para Home"
+          >
+            <Image
+              src="/logo-gzapi.svg"
+              alt="GZAPI"
+              width={120}
+              height={29}
+              className="h-7 w-auto"
+              priority
+            />
+            <p className="text-[10px] text-zinc-500 mt-2">
+              {isSuperAdmin ? (
+                <span className="text-amber-500">Super Admin</span>
+              ) : (
+                'Pipeline'
+              )}
+            </p>
+          </Link>
         </div>
 
         {/* Nav */}
@@ -52,7 +60,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <p className="px-2 pt-3 pb-1 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">
             Principal
           </p>
-          <NavItem href="/" icon={<Home size={15} />} label="Home" />
+          <NavItem href="/home" icon={<Home size={15} />} label="Home" />
           <NavItem href="/pipeline" icon={<LayoutGrid size={15} />} label="Pipeline" />
           <NavItem href="/reports" icon={<BarChart3 size={15} />} label="Relatórios" />
 

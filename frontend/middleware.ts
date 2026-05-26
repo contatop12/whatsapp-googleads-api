@@ -44,7 +44,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && isAuthPage) {
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/home', request.url))
   }
 
   return response
