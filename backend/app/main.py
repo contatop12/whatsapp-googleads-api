@@ -1,5 +1,7 @@
 import warnings
 
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="pydantic")
+
 import logfire
 from fastapi import FastAPI, HTTPException
 

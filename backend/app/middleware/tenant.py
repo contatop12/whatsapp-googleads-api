@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, Header
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import PyJWTError
 
 from app.config import settings
 from app.database import get_db
@@ -39,7 +40,7 @@ async def get_auth_context(
     token = authorization.removeprefix("Bearer ").strip()
     try:
         payload = _decode_supabase_jwt(token)
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
     user_id = payload.get("sub")
