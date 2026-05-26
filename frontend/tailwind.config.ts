@@ -14,7 +14,11 @@ const config: Config = {
         surface: "var(--bg-surface)",
         elevated: "var(--bg-elevated)",
         border: "var(--border)",
-        accent: "var(--accent)",
+        accent: {
+          DEFAULT: "var(--accent)",
+          dim: "var(--accent-dim)",
+          light: "var(--accent-light)",
+        },
         muted: "var(--text-muted)",
         zinc: {
           850: "#1f1f23",
@@ -27,6 +31,7 @@ const config: Config = {
         mono: ["JetBrains Mono", "monospace"],
       },
       boxShadow: {
+        "glow-accent": "0 0 20px rgba(127,119,221,0.15), 0 0 40px rgba(127,119,221,0.05)",
         "glow-emerald": "0 0 20px rgba(16,185,129,0.15), 0 0 40px rgba(16,185,129,0.05)",
         "glow-amber": "0 0 20px rgba(245,158,11,0.15), 0 0 40px rgba(245,158,11,0.05)",
         "glow-blue": "0 0 20px rgba(59,130,246,0.15), 0 0 40px rgba(59,130,246,0.05)",
