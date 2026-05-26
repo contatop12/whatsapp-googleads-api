@@ -122,9 +122,19 @@ def _parse_instance_row(raw: dict) -> dict | None:
     if not instance_name:
         return None
 
-    owner = inst.get("owner") or ""
+    owner = inst.get("owner") or inst.get("number") or ""
     phone = owner.split("@")[0] if owner and "@" in owner else (owner or None)
-    evolution_status = inst.get("status") or inst.get("state") or "close"
+    connection = inst.get("connection") if isinstance(inst.get("connection"), dict) else {}
+    evolution_status = (
+        inst.get("status")
+        or inst.get("state")
+        or inst.get("connectionStatus")
+        or connection.get("state")
+        or connection.get("status")
+        or raw.get("status")
+        or raw.get("state")
+        or "close"
+    )
 
     return {
         "instance_name": instance_name,
@@ -134,6 +144,14 @@ def _parse_instance_row(raw: dict) -> dict | None:
         "status": _parse_evolution_status(evolution_status),
         "evolution_status": evolution_status,
     }
+
+
+async def _find_instance_by_name(instance_name: str) -> dict | None:
+    for raw in await _fetch_instances_raw():
+        parsed = _parse_instance_row(raw)
+        if parsed and parsed["instance_name"] == instance_name:
+            return parsed
+    return None
 
 
 async def _fetch_instances_raw() -> list[dict]:
@@ -201,28 +219,22 @@ async def associate_instance_to_tenant(tenant: dict, instance_name: str) -> dict
     if not instance_name:
         raise ValueError("Nome da instância é obrigatório")
 
-    raw_instances = await _fetch_instances_raw()
-    match = None
-    for raw in raw_instances:
-        parsed = _parse_instance_row(raw)
-        if parsed and parsed["instance_name"] == instance_name:
-            match = parsed
-            break
-
+    match = await _find_instance_by_name(instance_name)
     if not match:
         raise LookupError(f"Instância '{instance_name}' não encontrada na Evolution")
 
     db = await get_db()
-    conflict = await (
+    conflict_resp = await (
         db.table("tenants")
         .select("id,name,slug")
         .eq("evolution_api_instance", instance_name)
         .neq("id", str(tenant["id"]))
-        .maybe_single()
+        .limit(1)
         .execute()
     )
-    if conflict.data:
-        other = conflict.data
+    conflict_rows = conflict_resp.data if conflict_resp and conflict_resp.data else []
+    if conflict_rows:
+        other = conflict_rows[0]
         raise ValueError(
             f"Instância já vinculada ao cliente {other.get('name') or other.get('slug')}"
         )

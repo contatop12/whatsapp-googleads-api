@@ -26,15 +26,28 @@ function parseError(detail: unknown): string {
 export function createApiFetch(getToken: () => Promise<string | null>): ApiFetch {
   return async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     const token = await getToken()
-    const res = await fetch(`${API_URL}${path}`, {
-      ...init,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...init?.headers,
-      },
-      cache: 'no-store',
-    })
+    let res: Response
+    try {
+      res = await fetch(`${API_URL}${path}`, {
+        ...init,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...init?.headers,
+        },
+        cache: 'no-store',
+      })
+    } catch (err) {
+      const hint =
+        API_URL.includes('localhost') && typeof window !== 'undefined'
+          ? ' Verifique NEXT_PUBLIC_BACKEND_URL no deploy.'
+          : ''
+      throw new Error(
+        `Não foi possível contactar a API (${API_URL}).${hint} ${
+          err instanceof Error ? err.message : 'Erro de rede'
+        }`
+      )
+    }
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
@@ -43,7 +56,7 @@ export function createApiFetch(getToken: () => Promise<string | null>): ApiFetch
       )
     }
 
-    return res.json()
+    return res.json() as Promise<T>
   }
 }
 

@@ -80,11 +80,13 @@ export function WhatsAppInstancePicker({
       await load()
       onLinked?.(result)
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro'
       toast({
         title: 'Não foi possível associar',
-        description: err instanceof Error ? err.message : 'Erro',
+        description: message,
         variant: 'destructive',
       })
+      setError(message)
     } finally {
       setLinking(null)
     }

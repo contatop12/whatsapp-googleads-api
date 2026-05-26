@@ -9,6 +9,8 @@ from app.middleware.tenant import (
     require_admin,
 )
 from app.models.whatsapp import WhatsAppLinkRequest
+import logfire
+
 from app.services.evolution import (
     associate_instance_to_tenant,
     configure_webhook,
@@ -135,3 +137,11 @@ async def link_whatsapp_instance(
         raise HTTPException(status_code=409, detail=str(e)) from e
     except RuntimeError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
+    except Exception as e:
+        logfire.error(
+            "whatsapp_link_unexpected_error",
+            tenant_id=str(tenant_id),
+            instance=body.instance_name,
+            error=str(e),
+        )
+        raise HTTPException(status_code=500, detail=f"Erro ao associar instância: {e}") from e
