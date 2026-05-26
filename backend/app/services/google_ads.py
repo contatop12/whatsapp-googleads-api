@@ -88,7 +88,10 @@ async def upload_conversion(lead: dict, stage: int, tenant: dict) -> dict:
                     "Content-Type": "application/json",
                 },
             )
-            response_data = r.json()
+            try:
+                response_data = r.json()
+            except Exception:
+                response_data = {}
 
         if r.status_code == 200:
             logfire.info("google_ads_conversion_sent", lead_id=str(lead.get("id")), stage=stage)

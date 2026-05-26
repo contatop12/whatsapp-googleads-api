@@ -19,7 +19,10 @@ export async function POST(req: NextRequest) {
   }
 
   const { email } = await req.json()
-  if (!email) return NextResponse.json({ error: 'E-mail obrigatório' }, { status: 400 })
+  if (!email || typeof email !== 'string') return NextResponse.json({ error: 'E-mail obrigatório' }, { status: 400 })
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return NextResponse.json({ error: 'E-mail inválido' }, { status: 400 })
+  }
 
   // Use service role to invite user
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!

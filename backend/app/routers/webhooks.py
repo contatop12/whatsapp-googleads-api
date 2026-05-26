@@ -20,11 +20,14 @@ def _parse_message(payload: dict) -> tuple[str, str, str | None]:
         or ""
     )
     timestamp = data.get("messageTimestamp")
-    first_message_at = (
-        datetime.fromtimestamp(timestamp, tz=timezone.utc).isoformat()
-        if timestamp
-        else datetime.now(timezone.utc).isoformat()
-    )
+    try:
+        first_message_at = (
+            datetime.fromtimestamp(int(timestamp), tz=timezone.utc).isoformat()
+            if timestamp
+            else datetime.now(timezone.utc).isoformat()
+        )
+    except (ValueError, OSError, OverflowError):
+        first_message_at = datetime.now(timezone.utc).isoformat()
     return phone, message_text, first_message_at
 
 

@@ -63,7 +63,7 @@ async def get_auth_context(
         user_id=user_id,
         tenant_id=str(profile["tenant_id"]) if profile.get("tenant_id") else None,
         role=role,
-        is_admin=role == "admin",
+        is_admin=role in ("admin", "super_admin"),
     )
 
 
