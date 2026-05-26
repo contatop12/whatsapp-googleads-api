@@ -23,7 +23,6 @@ export default async function ProfilePage() {
         userId={user.id}
         email={user.email!}
         name={profile.name}
-        role={profile.role}
       />
     </div>
   )

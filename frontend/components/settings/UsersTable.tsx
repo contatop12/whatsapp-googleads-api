@@ -43,16 +43,14 @@ export function UsersTable({ tenantId }: { tenantId: string }) {
   const [inviteRole, setInviteRole] = useState<'admin' | 'client'>('client')
   const [loading, setLoading] = useState(false)
 
-  const fetchUsers = async () => {
+  useEffect(() => {
     const supabase = createClient()
-    const { data } = await supabase
+    supabase
       .from('users')
       .select('id, name, role')
       .eq('tenant_id', tenantId)
-    setUsers(data ?? [])
-  }
-
-  useEffect(() => { fetchUsers() }, [tenantId])
+      .then(({ data }) => setUsers(data ?? []))
+  }, [tenantId])
 
   const handleInvite = async () => {
     setLoading(true)

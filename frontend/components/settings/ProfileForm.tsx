@@ -9,17 +9,15 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/components/ui/use-toast'
 import { usePermissions } from '@/hooks/usePermissions'
-import type { UserRole } from '@/lib/api-types'
 
 type Props = {
   userId: string
   email: string
   name: string | null
   phone?: string | null
-  role: UserRole
 }
 
-export function ProfileForm({ userId, email, name, phone, role }: Props) {
+export function ProfileForm({ userId, email, name, phone }: Props) {
   const { canEditEmail } = usePermissions()
   const { toast } = useToast()
   const [form, setForm] = useState({
