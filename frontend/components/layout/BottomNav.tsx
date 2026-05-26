@@ -38,7 +38,7 @@ export function BottomNav() {
 
   return (
     <>
-      <nav className="flex md:hidden fixed bottom-0 inset-x-0 bg-zinc-950 border-t-2 border-zinc-700 z-50 halftone">
+      <nav className="flex md:hidden fixed bottom-0 inset-x-0 bg-zinc-950 border-t-2 border-zinc-700 z-50 halftone-subtle">
         <BottomItem href="/home" icon={<Home size={20} />} label="Home" active={isActive('/home')} />
         <BottomItem href="/pipeline" icon={<LayoutGrid size={20} />} label="Pipeline" active={isActive('/pipeline')} />
         <BottomItem href="/settings/profile" icon={<Settings size={20} />} label="Config" active={isSettingsActive()} />

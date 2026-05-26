@@ -76,12 +76,21 @@ body {
   letter-spacing: 0.05em;
 }
 
-/* Halftone dot texture */
+/* Halftone dot texture — Pop Art comic panel */
 .halftone {
+  background-image:
+    radial-gradient(ellipse at 70% 30%, rgba(232, 25, 44, 0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 80%, rgba(20, 85, 192, 0.05) 0%, transparent 45%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.09) 1.5px, transparent 1.5px);
+  background-size: 100% 100%, 100% 100%, 16px 16px;
+}
+
+/* Sidebar gets subtler dots only */
+.halftone-subtle {
   background-image: radial-gradient(
     circle,
-    rgba(255, 255, 255, 0.055) 1.2px,
-    transparent 1.2px
+    rgba(255, 255, 255, 0.045) 1px,
+    transparent 1px
   );
   background-size: 12px 12px;
 }
