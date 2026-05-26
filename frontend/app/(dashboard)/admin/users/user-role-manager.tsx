@@ -29,8 +29,6 @@ export function UserRoleManager({ users: initialUsers, tenants }: Props) {
   const { toast } = useToast()
   const router = useRouter()
 
-  const tenantMap = Object.fromEntries(tenants.map((t) => [t.id, t]))
-
   async function updateUser(
     userId: string,
     updates: { role?: UserRole; tenant_id?: string | null }
