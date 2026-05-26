@@ -90,8 +90,29 @@ async def get_or_refresh_qr(tenant: dict) -> dict:
             .eq("id", str(tenant["id"]))
             .execute()
         )
+        return {"base64": qr_data["base64"], "status": "connecting"}
 
-    return {"base64": qr_data.get("base64"), "status": "connecting"}
+    instance_obj = qr_data.get("instance", {})
+    instance_state = (
+        instance_obj.get("state")
+        or instance_obj.get("status")
+        or qr_data.get("state")
+        or qr_data.get("status")
+    )
+    if instance_state == "open":
+        await (
+            db.table("tenants")
+            .update({
+                "evolution_instance_status": "connected",
+                "evolution_qr_code": None,
+            })
+            .eq("id", str(tenant["id"]))
+            .execute()
+        )
+        logfire.info("whatsapp_already_connected_detected", tenant=tenant.get("slug"), instance=instance_name)
+        return {"base64": None, "status": "connected"}
+
+    return {"base64": None, "status": "connecting"}
 
 
 async def handle_connection_update(tenant_slug: str, state: str, tenant: dict) -> None:

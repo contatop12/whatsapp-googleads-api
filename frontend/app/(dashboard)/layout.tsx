@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getUserProfile } from '@/lib/tenant'
-import { LayoutGrid, BarChart3, Settings, LogOut, MessageCircle, Globe, Zap, Shield } from 'lucide-react'
+import { LayoutGrid, BarChart3, Settings, LogOut, MessageCircle, Globe, Zap, Shield, Home } from 'lucide-react'
 import { GZapiLogo } from '@/components/gzapi-logo'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -52,6 +52,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <p className="px-2 pt-3 pb-1 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">
             Principal
           </p>
+          <NavItem href="/" icon={<Home size={15} />} label="Home" />
           <NavItem href="/pipeline" icon={<LayoutGrid size={15} />} label="Pipeline" />
           <NavItem href="/reports" icon={<BarChart3 size={15} />} label="Relatórios" />
 
