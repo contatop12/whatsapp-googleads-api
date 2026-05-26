@@ -6,10 +6,14 @@ import type {
   WhatsAppWebhookStatus,
 } from '@/lib/api-types'
 
+// Browser: route through Next.js proxy to avoid CORS (same-origin request)
+// Server: call backend directly using private env var
 export const API_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:8000'
+  typeof window !== 'undefined'
+    ? '/api/proxy'
+    : process.env.BACKEND_URL ||
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      'http://localhost:8000'
 
 export type ApiFetch = <T>(path: string, init?: RequestInit) => Promise<T>
 
@@ -38,12 +42,8 @@ export function createApiFetch(getToken: () => Promise<string | null>): ApiFetch
         cache: 'no-store',
       })
     } catch (err) {
-      const hint =
-        API_URL.includes('localhost') && typeof window !== 'undefined'
-          ? ' Verifique NEXT_PUBLIC_BACKEND_URL no deploy.'
-          : ''
       throw new Error(
-        `Não foi possível contactar a API (${API_URL}).${hint} ${
+        `Não foi possível contactar a API (${API_URL}). ${
           err instanceof Error ? err.message : 'Erro de rede'
         }`
       )
