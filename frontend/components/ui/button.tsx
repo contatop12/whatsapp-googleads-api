@@ -9,13 +9,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-[#E8192C] text-white border-black shadow-comic hover:bg-[#C41525]',
+          'bg-[#16A34A] text-white border-black shadow-comic hover:bg-[#15803D]',
         outline:
-          'bg-transparent text-[#E8192C] border-[#E8192C] shadow-comic-red hover:bg-[#E8192C]/10',
+          'bg-transparent text-zinc-300 border-zinc-600 shadow-comic hover:bg-zinc-800 hover:border-zinc-500',
         ghost:
           'border-transparent shadow-none text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 hover:border-zinc-700',
         destructive:
-          'bg-transparent text-red-400 border-red-500 shadow-comic hover:bg-red-500/10',
+          'bg-[#E8192C] text-white border-black shadow-comic hover:bg-[#C41525]',
         secondary:
           'bg-[#FFD700] text-black border-black shadow-comic hover:bg-[#D4B800]',
         blue:
