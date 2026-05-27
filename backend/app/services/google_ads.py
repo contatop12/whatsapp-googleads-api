@@ -80,7 +80,7 @@ async def upload_conversion(lead: dict, stage: int, tenant: dict) -> dict:
         access_token = await _get_access_token()
         async with httpx.AsyncClient() as client:
             r = await client.post(
-                f"https://googleads.googleapis.com/v17/customers/{customer_id}:uploadClickConversions",
+                f"https://googleads.googleapis.com/v19/customers/{customer_id}:uploadClickConversions",
                 json=payload,
                 headers={
                     "Authorization": f"Bearer {access_token}",
@@ -95,8 +95,7 @@ async def upload_conversion(lead: dict, stage: int, tenant: dict) -> dict:
 
         if r.status_code == 200:
             logfire.info("google_ads_conversion_sent", lead_id=str(lead.get("id")), stage=stage)
-            results = response_data.get("results", [])
-            if results and results[0].get("status") == "ACCEPTED":
+            if not response_data.get("partialFailureError"):
                 return {"status": "accepted", "response": response_data}
             return {"status": "rejected", "response": response_data}
         else:
