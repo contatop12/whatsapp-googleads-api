@@ -14,11 +14,17 @@ from fastapi import FastAPI, HTTPException
 
 from app.config import settings
 from app.middleware.cors_dynamic import DynamicCORSMiddleware
-from app.middleware.tenant import set_supabase_pubkey
+from app.middleware.tenant import set_supabase_pubkeys
 from app.routers import track, webhooks, leads, tenants, whatsapp, debug
 from app.sentry_app import init_sentry
 
 init_sentry()
+
+
+def _decode_jwk(key: dict):
+    x = int.from_bytes(base64.urlsafe_b64decode(key["x"] + "=="), "big")
+    y = int.from_bytes(base64.urlsafe_b64decode(key["y"] + "=="), "big")
+    return EllipticCurvePublicNumbers(x=x, y=y, curve=SECP256R1()).public_key()
 
 
 async def _load_supabase_jwks() -> None:
@@ -26,11 +32,14 @@ async def _load_supabase_jwks() -> None:
     async with httpx.AsyncClient(timeout=10.0) as client:
         resp = await client.get(url)
         resp.raise_for_status()
-        key = resp.json()["keys"][0]
-    x = int.from_bytes(base64.urlsafe_b64decode(key["x"] + "=="), "big")
-    y = int.from_bytes(base64.urlsafe_b64decode(key["y"] + "=="), "big")
-    pubkey = EllipticCurvePublicNumbers(x=x, y=y, curve=SECP256R1()).public_key()
-    set_supabase_pubkey(pubkey)
+        keys = resp.json()["keys"]
+
+    pubkeys = {}
+    for key in keys:
+        kid = key.get("kid", f"key_{len(pubkeys)}")
+        pubkeys[kid] = _decode_jwk(key)
+
+    set_supabase_pubkeys(pubkeys)
 
 
 @asynccontextmanager

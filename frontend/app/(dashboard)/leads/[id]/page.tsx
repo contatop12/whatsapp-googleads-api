@@ -113,7 +113,7 @@ export default function LeadDetailPage() {
               onChange={(v) => setForm((p) => ({ ...p, name: v }))}
             />
             <EditField
-              label="Gmail"
+              label="E-mail"
               value={form.email}
               onChange={(v) => setForm((p) => ({ ...p, email: v }))}
               type="email"
@@ -127,7 +127,7 @@ export default function LeadDetailPage() {
         ) : (
           <div className="divide-y divide-zinc-800">
             <ReadField label="Nome" value={lead.name} />
-            <ReadField label="Gmail" value={lead.email} />
+            <ReadField label="E-mail" value={lead.email} />
             <ReadField label="Telefone" value={formatPhone(lead.phone)} mono />
             <ReadField label="Cidade" value={lead.city ? `${lead.city}, ${lead.region}` : null} />
             <ReadField label="País" value={lead.country} />

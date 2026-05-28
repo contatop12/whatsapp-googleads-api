@@ -4,8 +4,15 @@ import sentry_sdk
 from datetime import datetime, timezone
 from app.config import settings
 
+_token_cache: dict = {"token": None, "expires_at": 0.0}
+
 
 async def _get_access_token() -> str:
+    import time
+    now = time.monotonic()
+    if _token_cache["token"] and now < _token_cache["expires_at"]:
+        return _token_cache["token"]
+
     async with httpx.AsyncClient() as client:
         r = await client.post(
             "https://oauth2.googleapis.com/token",
@@ -17,7 +24,12 @@ async def _get_access_token() -> str:
             },
         )
         r.raise_for_status()
-        return r.json()["access_token"]
+        data = r.json()
+
+    expires_in = int(data.get("expires_in", 3600))
+    _token_cache["token"] = data["access_token"]
+    _token_cache["expires_at"] = now + expires_in - 60  # 60s margem
+    return _token_cache["token"]
 
 
 def _conversion_name_for_stage(stage: int, tenant: dict) -> str | None:

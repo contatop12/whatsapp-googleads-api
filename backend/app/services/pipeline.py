@@ -168,6 +168,12 @@ async def advance_stage(
 ) -> dict:
     _validate_advance(lead, new_stage, conversion_value, tenant, triggered_by)
 
+    if await _has_stage_conversion(str(lead["id"]), new_stage):
+        logfire.warn("advance_stage_dedup", lead_id=str(lead["id"]), stage=new_stage)
+        db = await get_db()
+        resp = await db.table("leads").select("*").eq("id", str(lead["id"])).maybe_single().execute()
+        return resp.data or lead
+
     effective_value = _effective_conversion_value(new_stage, lead, tenant, conversion_value, triggered_by)
 
     db = await get_db()

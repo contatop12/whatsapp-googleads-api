@@ -72,6 +72,8 @@ async def move_lead(
         .maybe_single()
         .execute()
     )
+    if not tenant_resp.data:
+        raise HTTPException(status_code=404, detail="Tenant not found")
 
     try:
         updated = await advance_stage(

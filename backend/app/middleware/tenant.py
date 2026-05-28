@@ -7,12 +7,16 @@ from jwt.exceptions import PyJWTError
 
 from app.database import get_db
 
-_supabase_pubkey = None
+_supabase_pubkeys: dict = {}  # kid → public key
 
 
-def set_supabase_pubkey(key) -> None:
-    global _supabase_pubkey
-    _supabase_pubkey = key
+def set_supabase_pubkey(key, kid: str = "default") -> None:
+    _supabase_pubkeys[kid] = key
+
+
+def set_supabase_pubkeys(keys: dict) -> None:
+    _supabase_pubkeys.clear()
+    _supabase_pubkeys.update(keys)
 
 
 @dataclass
@@ -24,14 +28,24 @@ class AuthContext:
 
 
 def _decode_supabase_jwt(token: str) -> dict:
-    if _supabase_pubkey is None:
+    if not _supabase_pubkeys:
         raise HTTPException(status_code=503, detail="Auth public key not loaded")
-    return jwt.decode(
-        token,
-        _supabase_pubkey,
-        algorithms=["ES256"],
-        audience="authenticated",
+
+    header = jwt.get_unverified_header(token)
+    kid = header.get("kid")
+    candidates = (
+        [_supabase_pubkeys[kid]] if kid and kid in _supabase_pubkeys
+        else list(_supabase_pubkeys.values())
     )
+
+    last_exc: Exception | None = None
+    for pubkey in candidates:
+        try:
+            return jwt.decode(token, pubkey, algorithms=["ES256"], audience="authenticated")
+        except jwt.exceptions.PyJWTError as exc:
+            last_exc = exc
+
+    raise last_exc or jwt.exceptions.InvalidTokenError("no valid key")
 
 
 async def get_auth_context(

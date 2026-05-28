@@ -1,4 +1,5 @@
 import asyncio
+import secrets
 import httpx
 import logfire
 import sentry_sdk
@@ -24,8 +25,8 @@ def _expected_webhook_url(slug: str) -> str:
     return f"{settings.backend_url.rstrip('/')}/webhooks/evolution/{slug}"
 
 
-def _webhook_body(url: str) -> dict:
-    return {
+def _webhook_body(url: str, secret: str | None = None) -> dict:
+    body: dict = {
         "webhook": {
             "enabled": True,
             "url": url,
@@ -34,6 +35,9 @@ def _webhook_body(url: str) -> dict:
             "events": WEBHOOK_EVENTS,
         }
     }
+    if secret:
+        body["webhook"]["headers"] = {"x-webhook-secret": secret}
+    return body
 
 
 def _normalize_webhook_response(data: dict, expected_url: str) -> dict:
@@ -88,11 +92,23 @@ async def configure_webhook(tenant: dict) -> dict:
     webhook_url = _expected_webhook_url(tenant["slug"])
     base = settings.evolution_api_base_url.rstrip("/")
 
+    webhook_secret = tenant.get("evolution_webhook_secret")
+    if not webhook_secret:
+        webhook_secret = secrets.token_hex(32)
+        db = await get_db()
+        await (
+            db.table("tenants")
+            .update({"evolution_webhook_secret": webhook_secret})
+            .eq("id", str(tenant["id"]))
+            .execute()
+        )
+        logfire.info("evolution_webhook_secret_generated", tenant=tenant["slug"])
+
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.post(
             f"{base}/webhook/set/{instance_name}",
             headers=_headers(),
-            json=_webhook_body(webhook_url),
+            json=_webhook_body(webhook_url, secret=webhook_secret),
         )
 
     if resp.status_code not in (200, 201):
@@ -288,6 +304,17 @@ async def provision_instance(tenant: dict) -> dict:
     instance_name = f"tenant_{tenant['slug']}"
     base = settings.evolution_api_base_url
 
+    webhook_secret = tenant.get("evolution_webhook_secret")
+    if not webhook_secret:
+        webhook_secret = secrets.token_hex(32)
+        db_pre = await get_db()
+        await (
+            db_pre.table("tenants")
+            .update({"evolution_webhook_secret": webhook_secret})
+            .eq("id", str(tenant["id"]))
+            .execute()
+        )
+
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.get(f"{base}/instance/fetchInstances", headers=_headers())
         instances = resp.json() if resp.status_code == 200 else []
@@ -306,7 +333,7 @@ async def provision_instance(tenant: dict) -> dict:
         await client.post(
             f"{base}/webhook/set/{instance_name}",
             headers=_headers(),
-            json=_webhook_body(_expected_webhook_url(tenant["slug"])),
+            json=_webhook_body(_expected_webhook_url(tenant["slug"]), secret=webhook_secret),
         )
 
         qr_resp = await client.get(f"{base}/instance/connect/{instance_name}", headers=_headers())
@@ -412,4 +439,3 @@ async def handle_connection_update(tenant_slug: str, state: str, tenant: dict) -
         )
         from app.services.notifications import notify_whatsapp_disconnected
         asyncio.create_task(notify_whatsapp_disconnected(str(tenant["id"]), tenant_slug))
-        await provision_instance(tenant)

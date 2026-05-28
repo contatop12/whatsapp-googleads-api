@@ -1,5 +1,6 @@
 import asyncio
-from fastapi import APIRouter, HTTPException
+import secrets
+from fastapi import APIRouter, HTTPException, Request
 from datetime import datetime, timezone, timedelta
 
 from app.database import get_db
@@ -34,7 +35,7 @@ def _parse_message(payload: dict) -> tuple[str, str, str | None]:
 
 
 @router.post("/webhooks/evolution/{slug}")
-async def evolution_webhook(slug: str, payload: dict):
+async def evolution_webhook(slug: str, payload: dict, request: Request):
     db = await get_db()
 
     with logfire.span("webhook.evolution", tenant_slug=slug):
@@ -49,6 +50,13 @@ async def evolution_webhook(slug: str, payload: dict):
         )
         if not tenant_resp.data:
             raise HTTPException(status_code=404, detail="Tenant not found")
+
+        tenant_secret = tenant_resp.data.get("evolution_webhook_secret")
+        if tenant_secret:
+            incoming = request.headers.get("x-webhook-secret", "")
+            if not secrets.compare_digest(incoming, tenant_secret):
+                logfire.warn("webhook_unauthorized", tenant=slug)
+                raise HTTPException(status_code=401, detail="Unauthorized")
 
         tenant = tenant_resp.data
         event = payload.get("event")
@@ -71,9 +79,13 @@ async def evolution_webhook(slug: str, payload: dict):
 
         if event == "MESSAGES_UPSERT":
             phone, message_text, first_message_at = _parse_message(payload)
-            remote_jid = payload.get("data", {}).get("key", {}).get("remoteJid", "")
+            key = payload.get("data", {}).get("key", {})
+            remote_jid = key.get("remoteJid", "")
 
             if "@g.us" in remote_jid:
+                return {"ok": True}
+
+            if key.get("fromMe", False):
                 return {"ok": True}
 
             lead_resp = await (
