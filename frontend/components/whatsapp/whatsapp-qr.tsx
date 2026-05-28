@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { createClient } from '@/lib/supabase/client'
 import { api } from '@/lib/api'
-import { CheckCircle, XCircle, RefreshCw, Webhook } from 'lucide-react'
+import { CheckCircle, XCircle, RefreshCw, Webhook, ShieldCheck, ShieldAlert } from 'lucide-react'
 import type { WhatsAppWebhookStatus } from '@/lib/api-types'
 
 interface Props {
@@ -34,6 +34,7 @@ export function WhatsAppQR({ tenantId, initialStatus }: Props) {
         expected_url: '',
         active: false,
         events: [],
+        has_secret: false,
         error: err instanceof Error ? err.message : 'Erro ao verificar webhook',
       })
     } finally {
@@ -53,6 +54,7 @@ export function WhatsAppQR({ tenantId, initialStatus }: Props) {
         expected_url: '',
         active: false,
         events: [],
+        has_secret: false,
         error: err instanceof Error ? err.message : 'Erro ao ativar webhook',
       })
     } finally {
@@ -142,6 +144,7 @@ export function WhatsAppQR({ tenantId, initialStatus }: Props) {
   if (status === 'connected') {
     const webhookActive = webhook?.active
     const webhookError = webhook?.error
+    const hasSecret = webhook?.has_secret
 
     return (
       <div className="space-y-3">
@@ -210,6 +213,21 @@ export function WhatsAppQR({ tenantId, initialStatus }: Props) {
               )}
             </div>
           </div>
+          {webhook && (
+            <div className="flex items-center gap-1.5 mt-2">
+              {hasSecret ? (
+                <>
+                  <ShieldCheck size={12} className="text-emerald-500" />
+                  <span className="text-[11px] text-emerald-600">Secret ativo</span>
+                </>
+              ) : (
+                <>
+                  <ShieldAlert size={12} className="text-amber-500" />
+                  <span className="text-[11px] text-amber-600">Sem autenticação — reconf. o webhook</span>
+                </>
+              )}
+            </div>
+          )}
           <div className="flex gap-2 mt-3">
             <Button
               onClick={activateWebhook}

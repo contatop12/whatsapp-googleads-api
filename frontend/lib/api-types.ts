@@ -66,6 +66,7 @@ export type WhatsAppWebhookStatus = {
   expected_url: string
   active: boolean
   events: string[]
+  has_secret: boolean
   error?: string
 }
 

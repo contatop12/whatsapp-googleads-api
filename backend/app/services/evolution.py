@@ -40,11 +40,24 @@ def _webhook_body(url: str, secret: str | None = None) -> dict:
     return body
 
 
-def _normalize_webhook_response(data: dict, expected_url: str) -> dict:
+def _parse_bool(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.lower() not in ("false", "0", "no", "")
+    return bool(value)
+
+
+def _normalize_webhook_response(data: dict, expected_url: str, has_secret: bool = False) -> dict:
     nested = data.get("webhook") if isinstance(data.get("webhook"), dict) else {}
     actual_url = (data.get("url") or nested.get("url") or "").rstrip("/")
     expected = expected_url.rstrip("/")
-    enabled = bool(data.get("enabled", nested.get("enabled", False)))
+
+    raw_enabled = data.get("enabled")
+    if raw_enabled is None:
+        raw_enabled = nested.get("enabled", False)
+    enabled = _parse_bool(raw_enabled)
+
     events = data.get("events") or nested.get("events") or []
     return {
         "enabled": enabled,
@@ -52,6 +65,7 @@ def _normalize_webhook_response(data: dict, expected_url: str) -> dict:
         "expected_url": expected_url,
         "active": enabled and bool(actual_url) and actual_url == expected,
         "events": events,
+        "has_secret": has_secret,
     }
 
 
@@ -59,6 +73,7 @@ async def find_webhook(tenant: dict) -> dict:
     instance_name = _instance_name(tenant)
     expected_url = _expected_webhook_url(tenant["slug"])
     base = settings.evolution_api_base_url.rstrip("/")
+    has_secret = bool(tenant.get("evolution_webhook_secret"))
 
     async with httpx.AsyncClient(timeout=10.0) as client:
         resp = await client.get(
@@ -78,13 +93,19 @@ async def find_webhook(tenant: dict) -> dict:
             "expected_url": expected_url,
             "active": False,
             "events": [],
+            "has_secret": has_secret,
             "error": f"Evolution API retornou {resp.status_code}",
         }
 
     data = resp.json() if resp.content else {}
+    logfire.info(
+        "evolution_webhook_find_raw",
+        tenant=tenant.get("slug"),
+        raw=str(data)[:500],
+    )
     if isinstance(data, list) and data:
         data = data[0]
-    return _normalize_webhook_response(data if isinstance(data, dict) else {}, expected_url)
+    return _normalize_webhook_response(data if isinstance(data, dict) else {}, expected_url, has_secret=has_secret)
 
 
 async def configure_webhook(tenant: dict) -> dict:
